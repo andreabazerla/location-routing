@@ -1,0 +1,362 @@
+{
+    "ace": {
+        "search": {
+            "@backwards": "false",
+            "@highlightmatches": "true",
+            "@matchcase": "false",
+            "@preservecase": "false",
+            "@regex": "false",
+            "@wholeword": "false",
+            "@wraparound": "true"
+        }
+    },
+    "breakpoints": {
+        "json()": []
+    },
+    "console": {
+        "@expanded": true,
+        "@height": "300",
+        "@maximized": "false",
+        "json()": {
+            "meta": {
+                "accessList": [
+                    "tab1"
+                ]
+            },
+            "name": "pane1",
+            "nodes": [
+                {
+                    "type": "tab",
+                    "name": "tab1",
+                    "path": "",
+                    "className": [
+                        "tab1"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652253017741
+                        },
+                        "filter": true,
+                        "title": "LocationRouting.mos - Stopped",
+                        "tooltip": "LocationRouting.mos - Stopped",
+                        "output": {
+                            "id": "output469600",
+                            "width": 1688,
+                            "height": 268,
+                            "config": {
+                                "runner": "Mosel",
+                                "command": "LocationRouting.mos",
+                                "debug": false,
+                                "toolbar": true,
+                                "name": ""
+                            }
+                        }
+                    },
+                    "editorType": "output",
+                    "active": true
+                }
+            ],
+            "skin": "editor_tab",
+            "skinset": "default",
+            "type": "pane"
+        }
+    },
+    "ext": {
+        "counters": {
+            "@ace": 1,
+            "@acestatus": 1,
+            "@base-step-wizard": 2,
+            "@divider": 5,
+            "@document": 5,
+            "@editorswitch": 1,
+            "@fico.vdl.attributes-panel": 1,
+            "@fico.vdl.palette-panel": 1,
+            "@form": 4,
+            "@menu": 6,
+            "@menuitem": 15,
+            "@pane": 2,
+            "@session": 5,
+            "@tab": 5,
+            "@undoManager": 5,
+            "@welcome": 1
+        }
+    },
+    "findinfiles": {
+        "@console": "true",
+        "@matchcase": "false",
+        "@regex": "false",
+        "@scope": "selection",
+        "@wholeword": "false"
+    },
+    "local": {
+        "window": {
+            "@fullscreen": false,
+            "@maximized": true
+        }
+    },
+    "menus": {
+        "@minimized": "false"
+    },
+    "nak": {
+        "@installed": true
+    },
+    "od": {
+        "@last-run-config": "path:LocationRouting.mos"
+    },
+    "panecycle": {
+        "json()": [
+            "tab0",
+            "tab1"
+        ]
+    },
+    "panels": {
+        "@active-left": "tree",
+        "@active-right": "none",
+        "commands.panel": {
+            "@enabled": "false",
+            "@name": "commands.panel"
+        },
+        "debugger": {
+            "@enabled": "true",
+            "@name": "debugger"
+        },
+        "fico.ide.language.mosel.modules-panel": {
+            "@enabled": "true",
+            "@name": "fico.ide.language.mosel.modules-panel"
+        },
+        "fico.om.sidebar": {
+            "@enabled": "true",
+            "@name": "fico.om.sidebar"
+        },
+        "fico.vdl.attributes-panel0": {
+            "@enabled": "false",
+            "@name": "fico.vdl.attributes-panel0"
+        },
+        "fico.vdl.palette-panel0": {
+            "@enabled": "false",
+            "@name": "fico.vdl.palette-panel0"
+        },
+        "mosel.profiler": {
+            "@enabled": "true",
+            "@name": "mosel.profiler"
+        },
+        "navigate": {
+            "@enabled": "false",
+            "@name": "navigate"
+        },
+        "outline": {
+            "@enabled": "true",
+            "@name": "outline"
+        },
+        "tree": {
+            "@enabled": "true",
+            "@name": "tree"
+        }
+    },
+    "projecttree": {
+        "expanded": {
+            "json()": [
+                "/"
+            ]
+        }
+    },
+    "recentfiles": {
+        "json()": []
+    },
+    "search-history": {
+        "replace": {
+            "json()": [
+                "]",
+                "[",
+                " [",
+                " "
+            ]
+        },
+        "search": {
+            "json()": [
+                ")",
+                "(",
+                ","
+            ]
+        }
+    },
+    "tabs": {
+        "json()": {
+            "focus": "/LocationRouting.mos",
+            "meta": {
+                "accessList": [
+                    "tab0",
+                    "tab2",
+                    "tab3",
+                    "tab4"
+                ]
+            },
+            "name": "pane0",
+            "nodes": [
+                {
+                    "type": "tab",
+                    "name": "tab0",
+                    "path": "/LocationRouting.mos",
+                    "className": [
+                        "tab0",
+                        "focus"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "ignoreState": 0,
+                            "timestamp": 1652287323897
+                        },
+                        "filter": true,
+                        "title": "LocationRouting.mos",
+                        "tooltip": "/LocationRouting.mos",
+                        "ace": {}
+                    },
+                    "editorType": "ace",
+                    "active": true
+                },
+                {
+                    "type": "tab",
+                    "name": "tab2",
+                    "path": "/briefing.txt",
+                    "className": [
+                        "tab2"
+                    ],
+                    "document": {
+                        "filter": true,
+                        "title": "briefing.txt",
+                        "tooltip": "/briefing.txt",
+                        "ace": {
+                            "folds": [],
+                            "scrolltop": 0,
+                            "scrollleft": 0,
+                            "selection": {
+                                "start": {
+                                    "row": 1,
+                                    "column": 22
+                                },
+                                "end": {
+                                    "row": 1,
+                                    "column": 22
+                                },
+                                "isBackwards": false
+                            },
+                            "options": {
+                                "guessTabSize": true,
+                                "useWrapMode": false,
+                                "wrapToView": true
+                            },
+                            "firstLineState": 0
+                        },
+                        "hash": "abb16d7ff0ec89849ef3f33ebc4fb706aaef69fc",
+                        "meta": {
+                            "timestamp": 1652218117251
+                        },
+                        "changed": false
+                    },
+                    "editorType": "ace",
+                    "active": false
+                },
+                {
+                    "type": "tab",
+                    "name": "tab3",
+                    "path": "/data.dat",
+                    "className": [
+                        "tab3"
+                    ],
+                    "document": {
+                        "filter": true,
+                        "title": "data.dat",
+                        "tooltip": "/data.dat",
+                        "ace": {
+                            "folds": [],
+                            "scrolltop": 0,
+                            "scrollleft": 0,
+                            "selection": {
+                                "start": {
+                                    "row": 0,
+                                    "column": 36
+                                },
+                                "end": {
+                                    "row": 0,
+                                    "column": 36
+                                },
+                                "isBackwards": false
+                            },
+                            "options": {
+                                "guessTabSize": true,
+                                "useWrapMode": false,
+                                "wrapToView": true
+                            },
+                            "firstLineState": {
+                                "row": 5,
+                                "mode": "ace/mode/text"
+                            }
+                        },
+                        "hash": "2ab6c8f145383938aa44938ccfe13eda7dfda31b",
+                        "meta": {
+                            "timestamp": 1652279676866
+                        },
+                        "changed": false
+                    },
+                    "editorType": "ace",
+                    "active": false
+                },
+                {
+                    "type": "tab",
+                    "name": "tab4",
+                    "path": "/domande.txt",
+                    "className": [
+                        "tab4"
+                    ],
+                    "document": {
+                        "filter": true,
+                        "title": "domande.txt",
+                        "tooltip": "/domande.txt",
+                        "ace": {
+                            "folds": [],
+                            "scrolltop": 0,
+                            "scrollleft": 0,
+                            "selection": {
+                                "start": {
+                                    "row": 0,
+                                    "column": 0
+                                },
+                                "end": {
+                                    "row": 0,
+                                    "column": 0
+                                },
+                                "isBackwards": false
+                            },
+                            "options": {
+                                "guessTabSize": true,
+                                "useWrapMode": false,
+                                "wrapToView": true
+                            },
+                            "firstLineState": 0
+                        },
+                        "hash": "7a17134448bcda9914223e0a7b88216e2a791ecd",
+                        "meta": {
+                            "timestamp": 1652282535917
+                        },
+                        "changed": false
+                    },
+                    "editorType": "ace",
+                    "active": false
+                }
+            ],
+            "skin": "editor_tab",
+            "skinset": "default",
+            "type": "pane"
+        }
+    },
+    "tree_selection": {
+        "json()": [
+            "/LocationRouting.mos"
+        ]
+    },
+    "welcome": {
+        "@first": true
+    }
+}

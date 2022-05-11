@@ -1,0 +1,8 @@
+Si consideri un problema di location capacitato, in cui sono dati n clienti 
+N={1..n} ciascuno con domanda qi>0, e f luoghi possibili F={1..f} in cui 
+costruire dei magazzini di capacità Q, occorre decidere dove costruire i 
+magazzini noto gh il costo di costruzione del magazzino nella località h, quali
+clienti servire con ciascun magazzino sapendo che il costo di servizio è dato 
+dal costo del ciclo hamiltoniano di costo minimo che visita il magazzino h e 
+tutti i nodi associati ai clienti assegnati a quel magazzino. L'obiettivo è 
+minimizzare la somma dei costi di costruzione e di servizio ai clienti.
