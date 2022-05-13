@@ -38,8 +38,8 @@
                             "timestamp": 1652253017741
                         },
                         "filter": true,
-                        "title": "LocationRouting.mos - Stopped",
-                        "tooltip": "LocationRouting.mos - Stopped",
+                        "title": "LocationRouting.mos - Idle",
+                        "tooltip": "LocationRouting.mos - Idle",
                         "output": {
                             "id": "output469600",
                             "width": 1688,
@@ -67,14 +67,14 @@
             "@ace": 1,
             "@acestatus": 1,
             "@base-step-wizard": 2,
-            "@divider": 5,
+            "@divider": 4,
             "@document": 5,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
             "@form": 4,
-            "@menu": 6,
-            "@menuitem": 15,
+            "@menu": 3,
+            "@menuitem": 8,
             "@pane": 2,
             "@session": 5,
             "@tab": 5,
@@ -106,7 +106,6 @@
     },
     "panecycle": {
         "json()": [
-            "tab0",
             "tab1"
         ]
     },
@@ -183,169 +182,12 @@
     },
     "tabs": {
         "json()": {
-            "focus": "/LocationRouting.mos",
+            "focus": null,
             "meta": {
-                "accessList": [
-                    "tab0",
-                    "tab2",
-                    "tab3",
-                    "tab4"
-                ]
+                "accessList": []
             },
             "name": "pane0",
-            "nodes": [
-                {
-                    "type": "tab",
-                    "name": "tab0",
-                    "path": "/LocationRouting.mos",
-                    "className": [
-                        "tab0",
-                        "focus"
-                    ],
-                    "document": {
-                        "changed": false,
-                        "meta": {
-                            "ignoreState": 0,
-                            "timestamp": 1652287323897
-                        },
-                        "filter": true,
-                        "title": "LocationRouting.mos",
-                        "tooltip": "/LocationRouting.mos",
-                        "ace": {}
-                    },
-                    "editorType": "ace",
-                    "active": true
-                },
-                {
-                    "type": "tab",
-                    "name": "tab2",
-                    "path": "/briefing.txt",
-                    "className": [
-                        "tab2"
-                    ],
-                    "document": {
-                        "filter": true,
-                        "title": "briefing.txt",
-                        "tooltip": "/briefing.txt",
-                        "ace": {
-                            "folds": [],
-                            "scrolltop": 0,
-                            "scrollleft": 0,
-                            "selection": {
-                                "start": {
-                                    "row": 1,
-                                    "column": 22
-                                },
-                                "end": {
-                                    "row": 1,
-                                    "column": 22
-                                },
-                                "isBackwards": false
-                            },
-                            "options": {
-                                "guessTabSize": true,
-                                "useWrapMode": false,
-                                "wrapToView": true
-                            },
-                            "firstLineState": 0
-                        },
-                        "hash": "abb16d7ff0ec89849ef3f33ebc4fb706aaef69fc",
-                        "meta": {
-                            "timestamp": 1652218117251
-                        },
-                        "changed": false
-                    },
-                    "editorType": "ace",
-                    "active": false
-                },
-                {
-                    "type": "tab",
-                    "name": "tab3",
-                    "path": "/data.dat",
-                    "className": [
-                        "tab3"
-                    ],
-                    "document": {
-                        "filter": true,
-                        "title": "data.dat",
-                        "tooltip": "/data.dat",
-                        "ace": {
-                            "folds": [],
-                            "scrolltop": 0,
-                            "scrollleft": 0,
-                            "selection": {
-                                "start": {
-                                    "row": 0,
-                                    "column": 36
-                                },
-                                "end": {
-                                    "row": 0,
-                                    "column": 36
-                                },
-                                "isBackwards": false
-                            },
-                            "options": {
-                                "guessTabSize": true,
-                                "useWrapMode": false,
-                                "wrapToView": true
-                            },
-                            "firstLineState": {
-                                "row": 5,
-                                "mode": "ace/mode/text"
-                            }
-                        },
-                        "hash": "2ab6c8f145383938aa44938ccfe13eda7dfda31b",
-                        "meta": {
-                            "timestamp": 1652279676866
-                        },
-                        "changed": false
-                    },
-                    "editorType": "ace",
-                    "active": false
-                },
-                {
-                    "type": "tab",
-                    "name": "tab4",
-                    "path": "/domande.txt",
-                    "className": [
-                        "tab4"
-                    ],
-                    "document": {
-                        "filter": true,
-                        "title": "domande.txt",
-                        "tooltip": "/domande.txt",
-                        "ace": {
-                            "folds": [],
-                            "scrolltop": 0,
-                            "scrollleft": 0,
-                            "selection": {
-                                "start": {
-                                    "row": 0,
-                                    "column": 0
-                                },
-                                "end": {
-                                    "row": 0,
-                                    "column": 0
-                                },
-                                "isBackwards": false
-                            },
-                            "options": {
-                                "guessTabSize": true,
-                                "useWrapMode": false,
-                                "wrapToView": true
-                            },
-                            "firstLineState": 0
-                        },
-                        "hash": "7a17134448bcda9914223e0a7b88216e2a791ecd",
-                        "meta": {
-                            "timestamp": 1652282535917
-                        },
-                        "changed": false
-                    },
-                    "editorType": "ace",
-                    "active": false
-                }
-            ],
+            "nodes": [],
             "skin": "editor_tab",
             "skinset": "default",
             "type": "pane"

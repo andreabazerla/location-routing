@@ -1,52 +1,59 @@
 model "Location Routing"
-  uses "mmxprs"
+	uses "mmxprs", "mmive"
 
-  version 1.0.0
+  	version 1.0.0
 
-  setparam("XPRS_VERBOSE", true)
+  	setparam("XPRS_VERBOSE", true)
+  
+  	forward  procedure draw_depots
 
-  declarations
-    depots_number = 5
-    customers_number = 15
-    points_number = depots_number + customers_number
-    depots_capacity = 10
+  	declarations
+    	depots_number = 5
+    	customers_number = 15
+    	points_number = depots_number + customers_number
+    	depots_capacity = 10
 
-	  DEPOTS_NUMBER = 1..depots_number
-	  DEPOT_X, DEPOT_Y, DEPOT_BUILD_COST : array(DEPOTS_NUMBER) of integer
+		DEPOTS_NUMBER = 1..depots_number
+		DEPOT_X, DEPOT_Y : array(DEPOTS_NUMBER) of integer
+		DEPOTS: array(DEPOTS_NUMBER) of array(1..2) of integer
+		
+		CUSTOMERS_NUMBER = 1..customers_number
+		CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
+		
+		POINTS_NUMBER = 1..points_number
+		
+		VEHICLES = 1..depots_number
+		
+		build_depot : array(DEPOTS_NUMBER) of mpvar
+		
+		DISTANCE : array(POINTS_NUMBER, POINTS_NUMBER) of integer
+		take_customer : array(POINTS_NUMBER, POINTS_NUMBER, VEHICLES) of mpvar
+		Cost : linctr
+  	end-declarations
 
-	  CUSTOMERS_NUMBER = 1..customers_number
-	  CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
+  	initializations from "data.dat"
+		[DEPOT_X, DEPOT_Y] as 'DEPOTS'
+  	end-initializations
 
-	  POINTS_NUMBER = 1..points_number
+  	!forall(i in DEPOTS_NUMBER) build_depot(i) is_binary
+  	!forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in VEHICLES) take_customer(i,j,k) is_binary
 
-	  VEHICLES = 1..depots_number
+  	!Cost := sum(i in DEPOTS_NUMBER) (DEPOTS(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, kk in DEPOTS_NUMBER) DISTANCE(i,j) * take_customer(i,j,kk)
 
-	  build_depot : array(DEPOTS_NUMBER) of mpvar
+  	!minimize(Cost)
 
-	  DISTANCE : array(POINTS_NUMBER, POINTS_NUMBER) of integer
-	  take_customer : array(POINTS_NUMBER, POINTS_NUMBER, VEHICLES) of mpvar
-
-    Cost : linctr
-  end-declarations
-
-  !initializations from "data.dat"
-	  !DEPOTS
-	  !CUSTOMERS
-  !end-initializations
-
-  DEPOTS := [ [2, 3, 5], [7, 2, 3], [8, 5, 2], [6, 6, 1], [8, 0, 7] ]
-  writeln(DEPOTS)
-
-  CUSTOMERS := [ [1, 1, 9], [2, 7, 5], [5, 4, 3], [7, 1, 6], [3, 9, 4], [8, 9, 1], [3, 8, 2], [3, 6, 4], [0, 9, 8], [3, 4, 7], [9, 8, 6], [6, 1, 6], [5, 0, 2], [9, 0, 4], [5, 1, 1] ]
-  writeln(CUSTOMERS)
-
-  forall(i in DEPOTS_NUMBER) build_depot(i) is_binary
-  forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in VEHICLES) take_customer(i,j,k) is_binary
-
-  Cost := sum(i in DEPOTS_NUMBER) (DEPOTS(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, kk in DEPOTS_NUMBER) DISTANCE(i,j) * take_customer(i,j,kk)
-
-  minimize(Cost)
-
-  writeln("Cost: ", getobjval)
+  	!writeln("Cost: ", getobjval)
+  
+  	draw_depots
+  
+  !-----------------------------------------------------------------------------
+  
+	procedure draw_depots
+		IVEerase
+		IVEzoom(min(i in DEPOTS_NUMBER) DEPOT_X(i)-10, min(i in DEPOTS_NUMBER) DEPOT_Y(i)-10,
+				max(i in DEPOTS_NUMBER) DEPOT_X(i)+10, max(i in DEPOTS_NUMBER) DEPOT_Y(i)+10)
+		depots_plot := IVEaddplot("Depots", IVE_BLACK)
+		forall(i in DEPOTS_NUMBER) IVEdrawpoint(depots_plot, DEPOT_X(i), DEPOT_Y(i));
+	end-procedure
 
 end-model
