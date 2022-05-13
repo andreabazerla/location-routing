@@ -6,6 +6,7 @@ model "Location Routing"
   	setparam("XPRS_VERBOSE", true)
   
   	forward  procedure draw_depots
+  	forward  procedure draw_customers
 
   	declarations
     	depots_number = 5
@@ -19,6 +20,7 @@ model "Location Routing"
 		
 		CUSTOMERS_NUMBER = 1..customers_number
 		CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
+		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..3) of integer
 		
 		POINTS_NUMBER = 1..points_number
 		
@@ -33,6 +35,7 @@ model "Location Routing"
 
   	initializations from "data.dat"
 		[DEPOT_X, DEPOT_Y] as 'DEPOTS'
+		[CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND] as 'CUSTOMERS'
   	end-initializations
 
   	!forall(i in DEPOTS_NUMBER) build_depot(i) is_binary
@@ -45,6 +48,7 @@ model "Location Routing"
   	!writeln("Cost: ", getobjval)
   
   	draw_depots
+  	draw_customers
   
   !-----------------------------------------------------------------------------
   
@@ -52,8 +56,15 @@ model "Location Routing"
 		IVEerase
 		IVEzoom(min(i in DEPOTS_NUMBER) DEPOT_X(i)-10, min(i in DEPOTS_NUMBER) DEPOT_Y(i)-10,
 				max(i in DEPOTS_NUMBER) DEPOT_X(i)+10, max(i in DEPOTS_NUMBER) DEPOT_Y(i)+10)
-		depots_plot := IVEaddplot("Depots", IVE_BLACK)
+		depots_plot := IVEaddplot("Depots", IVE_RED)
 		forall(i in DEPOTS_NUMBER) IVEdrawpoint(depots_plot, DEPOT_X(i), DEPOT_Y(i));
+	end-procedure
+	
+	procedure draw_customers
+		IVEzoom(min(i in CUSTOMERS_NUMBER) CUSTOMER_X(i)-10, min(i in CUSTOMERS_NUMBER) CUSTOMER_Y(i)-10,
+				max(i in CUSTOMERS_NUMBER) CUSTOMER_X(i)+10, max(i in CUSTOMERS_NUMBER) CUSTOMER_Y(i)+10)
+		customers_plot := IVEaddplot("Customers", IVE_BLACK)
+		forall(i in CUSTOMERS_NUMBER) IVEdrawpoint(customers_plot, CUSTOMER_X(i), CUSTOMER_Y(i));
 	end-procedure
 
 end-model
