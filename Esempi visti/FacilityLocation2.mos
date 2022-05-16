@@ -1,0 +1,137 @@
+model FacilityLocationAleLuana
+uses "mmxprs"; !gain access to the Xpress-Optimizer solver
+
+declarations
+	n: integer !numero di località J
+	m: integer !numero di clienti I
+	k: integer !numero di magazzini aperti k
+	bigM: integer !costo di apertura uguale per tutti che andrà moltiplicato per un numero randomico in base alla posizione
+	costo_s: integer !costo di servizio uguale per tutti da moltiplicare per un random
+	!bigM e costo_s vanno fatti perché la funzione random restituisce un numero tra 0 e 1
+end-declarations
+
+n:= 16
+m:= 50
+bigM:=1000
+costo_s := 500
+k:= floor(n/5) !prendo un quinto delle località e ci faccio il floor, questi sono i magazzini che devono essere aperti
+
+declarations	
+	LOCALITA = 1..n
+	CLIENTI = 1..m
+	COSTO_SERVIZIO: array(LOCALITA, CLIENTI) of real !sarebbe il cij dell'esempio su slide
+	COSTO_FISSO: array(LOCALITA) of real !costo di apertura di ogni località
+	X: array(CLIENTI, LOCALITA) of mpvar !indica se il cliente è legato al magazzino
+	Y: array(LOCALITA) of mpvar !indica se il magazzino è aperto
+	Objective: linctr
+end-declarations
+
+!rendiamo noti i costi fissi
+forall(j in LOCALITA)
+	COSTO_FISSO(j) := real(floor(bigM*random)) 
+
+!rendiamo nodi i costi di servizio
+forall(i in CLIENTI, j in LOCALITA)
+	COSTO_SERVIZIO(j, i) := real(floor(costo_s*random))
+	
+!dichiariamo il fatto che gli mpvar sono binari
+forall(i in CLIENTI, j in LOCALITA) 
+	X(i,j) is_binary
+	
+forall(j in LOCALITA)
+	Y(j) is_binary
+
+!scrivo il modello
+sum(j in LOCALITA)Y(j) = k !vincolo di cardinalità
+
+forall(j in LOCALITA) !vincolo aggregato di consistenza logica
+	sum(i in CLIENTI) X(i,j) <= m*Y(j) !se un magazzino è aperto il numero di clienti posseduti dal magazzino deve essere minore di m
+
+forall(i in CLIENTI) !vincolo di semiassegnamento
+	sum(j in LOCALITA) X(i,j) = 1 !ogni cliente appartiene a un solo magazzino aperto
+	
+Objective := sum(j in LOCALITA)COSTO_FISSO(j)*Y(j) + 
+			 sum(i in CLIENTI, j in LOCALITA)COSTO_SERVIZIO(j,i)*X(i,j)
+
+minimize(Objective) !risolve il problema intero (a variabili intere), trovando un upper bound
+writeln("Soluzione intera ",getobjval)
+
+
+minimize(XPRS_LIN, Objective) !funzione obiettivo con il rilassamento continuo, bound migliore
+writeln("Con rilassamento continuo: ", getobjval)
+
+writeln("Y")
+forall(j in LOCALITA | getsol(Y(j))>0 and getsol(Y(j))<=1) do !per ogni località tale che getsol(Y) sia positivo e minore di 1
+	writeln("Y(",j,")= ",strfmt(getsol(Y(j)),2,2))
+	write("x frazionarie per facility ",j,":\t")	
+	forall(i in CLIENTI| getsol(X(i,j))>0 and getsol(X(i,j))<=1) 
+		write(i,"):", strfmt(getsol(X(i,j)),2,2)," " )
+	write("\n")
+	end-do
+writeln("Vincoli x>y violati:")
+forall(j in LOCALITA, i in CLIENTI) do
+	if (getsol(X(i,j))>getsol(Y(j)))
+		then
+		writeln(i,",",j,": ",
+			strfmt(getsol(X(i,j)),2,2),">",
+			strfmt(getsol(Y(j)),2,2))
+	end-if
+end-do
+
+declarations
+	CutGen: boolean
+	iter: integer
+	MyCuts: array(range) of linctr
+end-declarations
+
+iter :=0 ! iteration counter
+repeat
+	CutGen := false
+	iter +=1
+	forall(j in LOCALITA, i in CLIENTI) do
+		if (getsol(X(i,j))>getsol(Y(j))) ! trovato vincolo violato
+			then
+			CutGen := true
+			writeln("(",i,",",j,"): ",
+				strfmt(getsol(X(i,j)),2,2),">",
+				strfmt(getsol(Y(j)),2,2))
+			MyCuts(iter) := X(i,j) <= Y(j)
+		end-if
+		if 	CutGen then
+			minimize(XPRS_LIN,Objective)
+			writeln("iter ",iter,"): ",strfmt(getobjval,5,1))
+			break ! esce dal loop + interno in cui si trova, esce dal forall e resta nel while
+		end-if
+	end-do
+until not(CutGen)
+
+
+
+writeln("Y")
+forall(j in LOCALITA| getsol(Y(j))=1.0) do 
+	writeln("Y(",j,")= ",strfmt(getsol(Y(j)),2,2))
+	write("x frazionarie per facility ",j,":\t")	
+	forall(i in CLIENTI | getsol(X(i,j)) = 1.0) 
+		write(i,"):", strfmt(getsol(X(i,j)),2,2)," " )
+	write("\n")
+end-do
+
+
+writeln("generati ", 100*iter/(m*n),"% dei vincoli possibili\n")
+! non è detto che si arrivi alla soluzione ottima intera con i tagli perché ad 
+! un certo punto non è più efficace - come detto dalle slide
+! soluzione intera
+minimize(Objective)
+writeln("ottimo intero:", getobjval,"\n")
+
+
+writeln("-------------------------------------------")
+forall(j in LOCALITA| getsol(Y(j))=1.0) do 
+	writeln("Y(",j,")= ",strfmt(getsol(Y(j)),2,2))
+	write("x frazionarie per facility ",j,":\t")	
+	forall(i in CLIENTI | getsol(X(i,j)) = 1.0) 
+		write(i,"):", strfmt(getsol(X(i,j)),2,2)," " )
+	write("\n")
+end-do
+
+end-model
