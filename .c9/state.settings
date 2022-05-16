@@ -99,14 +99,14 @@
             "@ace": 1,
             "@acestatus": 1,
             "@base-step-wizard": 2,
-            "@divider": 4,
+            "@divider": 5,
             "@document": 5,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
             "@form": 4,
-            "@menu": 3,
-            "@menuitem": 8,
+            "@menu": 6,
+            "@menuitem": 15,
             "@pane": 2,
             "@session": 5,
             "@tab": 5,
@@ -211,6 +211,10 @@
         },
         "search": {
             "json()": [
+                "ROUTES",
+                "sum",
+                "vincol",
+                "vincp",
                 "costo_s",
                 "LOCATION_COST",
                 ")",
@@ -241,7 +245,7 @@
                     "document": {
                         "changed": false,
                         "meta": {
-                            "timestamp": 1652713395571
+                            "timestamp": 1652714736610
                         },
                         "filter": true,
                         "title": "LocationRouting.mos",

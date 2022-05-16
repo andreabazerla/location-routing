@@ -35,7 +35,6 @@ model "Location Routing"
 		build_depot : array(LOCATIONS_NUMBER) of mpvar
 
 		ROUTES_NUMBER = 1..locations_number
-		ROUTES: array(ROUTES_NUMBER) of integer
 
 		DISTANCE : array(POINTS_NUMBER, POINTS_NUMBER) of real
 		take_customer : array(POINTS_NUMBER, POINTS_NUMBER, ROUTES_NUMBER) of mpvar
@@ -91,27 +90,37 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
+	sum(h in LOCATIONS_NUMBER) build_depot(h)
+
+	! Ogni cliente appartiene ad una e una sola route
 	forall(j in CUSTOMERS_NUMBER)
-		sum(i in (POINTS_NUMBER)) sum(k in ROUTES_NUMBER) take_customer(i,j,k) = 1
+		sum(i in POINTS_NUMBER, k in ROUTES_NUMBER) take_customer(i,j,k) = 1
 
+	! La domanda totale dei clienti di una route deve essere minore o uguale alla capacità del magazzino da cui parte
 	forall(k in ROUTES_NUMBER)
-		sum(i in POINTS_NUMBER) sum(j in CUSTOMERS_NUMBER) CUSTOMER_DEMAND(j)*take_customer(i,j,k) <= depots_capacity
+		sum(i in POINTS_NUMBER, j in CUSTOMERS_NUMBER) CUSTOMER_DEMAND(j) * take_customer(i,j,k) <= depots_capacity
 
+	! Ogni route inizia da un magazzino
 	forall(i in ROUTES_NUMBER, k in ROUTES_NUMBER)
 		sum(j in CUSTOMERS_NUMBER) take_customer(i,j,k) <= 1
 
+	! Ogni nodo ha solo 2 archi incidenti
 	forall(j in POINTS_NUMBER, k in ROUTES_NUMBER)
 		sum(i in POINTS_NUMBER) take_customer(i,j,k) = 2
 
+	! Un veicolo non può da un magazzino andare ad un altro magazzino
 	forall(k in ROUTES_NUMBER)
-		sum(i in LOCATIONS_NUMBER) sum(j in LOCATIONS_NUMBER) take_customer(i,j,k) = 0
+		sum(i in LOCATIONS_NUMBER, j in LOCATIONS_NUMBER) take_customer(i,j,k) = 0
+
+!FUNZIONE OBIETTIVO------------------------------------------------------------
 
   	Cost := sum(i in LOCATIONS_NUMBER) (LOCATION_COST(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, k in LOCATIONS_NUMBER) DISTANCE(i,j) * take_customer(i,j,k)
 
 	minimize(Cost)
-  	minimize(XPRS_LIN, Cost)
+	writeln("Cost = ", getobjval)
 
-  	writeln("Cost: ", getobjval)
+  	minimize(XPRS_LIN, Cost)
+  	writeln("Cost = ", getobjval)
 (!
   	forall(i in ROUTES_NUMBER) do
 		writeln(getsol(build_depot(i)))
