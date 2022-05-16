@@ -15,12 +15,13 @@
     },
     "console": {
         "@expanded": true,
-        "@height": 266.60003662109375,
+        "@height": 380,
         "@maximized": "false",
         "json()": {
             "meta": {
                 "accessList": [
-                    "tab1"
+                    "tab1",
+                    "tab4"
                 ]
             },
             "name": "pane1",
@@ -42,8 +43,8 @@
                         "tooltip": "LocationRouting.mos - Stopped",
                         "output": {
                             "id": "output469600",
-                            "width": 1304,
-                            "height": 234,
+                            "width": 1688,
+                            "height": 348,
                             "config": {
                                 "runner": "Mosel",
                                 "command": "LocationRouting.mos",
@@ -55,6 +56,37 @@
                     },
                     "editorType": "output",
                     "active": true
+                },
+                {
+                    "type": "tab",
+                    "name": "tab4",
+                    "path": "",
+                    "className": [
+                        "tab4"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652711960796
+                        },
+                        "filter": true,
+                        "title": "Esempi\\ visti/FacilityLocation2.mos - Stopped",
+                        "tooltip": "Esempi\\ visti/FacilityLocation2.mos - Stopped",
+                        "output": {
+                            "id": "output5665310",
+                            "width": 1688,
+                            "height": 348,
+                            "config": {
+                                "runner": "Mosel",
+                                "command": "Esempi\\ visti/FacilityLocation2.mos",
+                                "debug": false,
+                                "toolbar": true,
+                                "name": ""
+                            }
+                        }
+                    },
+                    "editorType": "output",
+                    "active": false
                 }
             ],
             "skin": "editor_tab",
@@ -68,7 +100,7 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 4,
-            "@document": 2,
+            "@document": 5,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
@@ -76,9 +108,9 @@
             "@menu": 3,
             "@menuitem": 8,
             "@pane": 2,
-            "@session": 2,
-            "@tab": 1,
-            "@undoManager": 2,
+            "@session": 5,
+            "@tab": 5,
+            "@undoManager": 5,
             "@welcome": 1
         }
     },
@@ -160,7 +192,8 @@
     "projecttree": {
         "expanded": {
             "json()": [
-                "/"
+                "/",
+                "/Esempi visti"
             ]
         }
     },
@@ -178,6 +211,8 @@
         },
         "search": {
             "json()": [
+                "costo_s",
+                "LOCATION_COST",
                 ")",
                 "(",
                 ","
@@ -189,7 +224,8 @@
             "focus": "/LocationRouting.mos",
             "meta": {
                 "accessList": [
-                    "tab0"
+                    "tab0",
+                    "tab3"
                 ]
             },
             "name": "pane0",
@@ -205,7 +241,7 @@
                     "document": {
                         "changed": false,
                         "meta": {
-                            "timestamp": 1652710285275
+                            "timestamp": 1652713395571
                         },
                         "filter": true,
                         "title": "LocationRouting.mos",
@@ -214,6 +250,26 @@
                     },
                     "editorType": "ace",
                     "active": true
+                },
+                {
+                    "type": "tab",
+                    "name": "tab3",
+                    "path": "/Esempi visti/FacilityLocation2.mos",
+                    "className": [
+                        "tab3"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652696534363
+                        },
+                        "filter": true,
+                        "title": "FacilityLocation2.mos",
+                        "tooltip": "/Esempi visti/FacilityLocation2.mos",
+                        "ace": {}
+                    },
+                    "editorType": "ace",
+                    "active": false
                 }
             ],
             "skin": "editor_tab",
@@ -223,7 +279,7 @@
     },
     "tree_selection": {
         "json()": [
-            "/data.dat"
+            "/Esempi visti/FacilityLocation2.mos"
         ]
     },
     "welcome": {

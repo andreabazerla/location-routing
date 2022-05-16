@@ -5,7 +5,7 @@ model "Location Routing"
 
   	setparam("XPRS_VERBOSE", true)
 
-  !	forward procedure draw_locations
+	!forward procedure draw_locations
   	!forward procedure draw_customers
 
   	declarations
@@ -14,7 +14,7 @@ model "Location Routing"
     	points_number: integer
     	depots_capacity: integer
     end-declarations
-    
+
     locations_number := 5
   	customers_number := 15
   	points_number := locations_number + customers_number
@@ -23,17 +23,17 @@ model "Location Routing"
 	declarations
 		LOCATIONS_NUMBER = 1..locations_number
 		LOCATION_X, LOCATION_Y, LOCATION_COST: array(LOCATIONS_NUMBER) of integer
-		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..2) of integer
+		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..3) of integer
 
 		CUSTOMERS_NUMBER = 1..customers_number
 		CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
-		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..2) of integer
+		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..3) of integer
 
 		POINTS_NUMBER = 1..points_number
-		POINTS: array(POINTS_NUMBER) of array(1..2) of integer
-		
-		build_depot : array(LOCATIONS_NUMBER) of mpvar	
-	
+		POINTS: array(POINTS_NUMBER) of array(1..3) of integer
+
+		build_depot : array(LOCATIONS_NUMBER) of mpvar
+
 		ROUTES_NUMBER = 1..locations_number
 		ROUTES: array(ROUTES_NUMBER) of integer
 
@@ -42,94 +42,91 @@ model "Location Routing"
 
 		Cost : linctr
 	end-declarations
+
 	forall(i in LOCATIONS_NUMBER) build_depot(i) is_binary
 	forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in ROUTES_NUMBER) take_customer(i,j,k) is_binary
 
   	initializations from "data.dat"
-		[LOCATION_X, LOCATION_Y] as 'LOCATIONS'
-		[CUSTOMER_X, CUSTOMER_Y] as 'CUSTOMERS'
-		CUSTOMER_DEMAND as 'CUSTOMERS_DEMAND'
-		LOCATION_COST as 'LOCATION_COST'
+		[LOCATION_X, LOCATION_Y, LOCATION_COST] as 'LOCATIONS'
+		[CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND] as 'CUSTOMERS'
   	end-initializations
-  	
-  	
-		
+
   	forall(i in LOCATIONS_NUMBER) do
 		LOCATIONS(i,1) := LOCATION_X(i)
 		LOCATIONS(i,2) := LOCATION_Y(i)
+		LOCATIONS(i,3) := LOCATION_COST(i)
   	end-do
-  	
+
   	forall(i in CUSTOMERS_NUMBER) do
 		CUSTOMERS(i,1) := CUSTOMER_X(i)
 		CUSTOMERS(i,2) := CUSTOMER_Y(i)
+		CUSTOMERS(i,3) := CUSTOMER_DEMAND(i)
 	end-do
-	
+
 	contatore := 0
 	forall(i in LOCATIONS_NUMBER) do
-		POINTS(i,1):= LOCATION_X(i)
-		POINTS(i,2):= LOCATION_Y(i)
+		POINTS(i,1) := LOCATION_X(i)
+		POINTS(i,2) := LOCATION_Y(i)
+		POINTS(i,3) := LOCATION_COST(i)
 		contatore := i
 	end-do
-	
+
 	forall(i in CUSTOMERS_NUMBER) do
-		POINTS(contatore+i,1):= CUSTOMER_X(i)
-		POINTS(contatore+i,2):= CUSTOMER_Y(i)
+		POINTS(contatore+i,1) := CUSTOMER_X(i)
+		POINTS(contatore+i,2) := CUSTOMER_Y(i)
+		POINTS(contatore+i,3) := CUSTOMER_DEMAND(i)
 	end-do
-	
-  	writeln(POINTS)
-		
+
 	writeln(LOCATIONS)
 	writeln(CUSTOMERS)
-	
-	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do		
-		DISTANCE(i,j):=sqrt((POINTS(j,1)-POINTS(i,1))*(POINTS(j,1)-POINTS(i,1)) + (POINTS(j,2)-POINTS(i,2))*(POINTS(j,2)-POINTS(i,2)))
-		writeln(DISTANCE(i,j))		
-	end-do
-	
-	(!forall(i in POINTS_NUMBER) do
+	writeln(POINTS)
+
+	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
-			if (i>j) then 
-				DISTANCE(i,j):=sqrt((POINTS(j,1)-POINTS(i,1))*(POINTS(j,1)-POINTS(i,1)) + (POINTS(j,2)-POINTS(i,2))*(POINTS(j,2)-POINTS(i,2)))
-				write(strfmt(DISTANCE(i,j), 2, 2), "\t")
-			else break;
-			end-if
+			DISTANCE(i,j) := sqrt((POINTS(j,1)-POINTS(i,1))^2 + (POINTS(j,2)-POINTS(i,2))^2)
+			write(strfmt(DISTANCE(i,j), 2, 2), "\t")
 		end-do
 		write("\n")
-	end-do!)
-			
-	
-	
+	end-do
 
-!VINCOLI DEL MODELLO---------------------------------------------------------------------
-	
-
+!VINCOLI DEL MODELLO-----------------------------------------------------------
 
 	forall(j in CUSTOMERS_NUMBER)
 		sum(i in (POINTS_NUMBER)) sum(k in ROUTES_NUMBER) take_customer(i,j,k) = 1
 
 	forall(k in ROUTES_NUMBER)
 		sum(i in POINTS_NUMBER) sum(j in CUSTOMERS_NUMBER) CUSTOMER_DEMAND(j)*take_customer(i,j,k) <= depots_capacity
-		
+
 	forall(i in ROUTES_NUMBER, k in ROUTES_NUMBER)
 		sum(j in CUSTOMERS_NUMBER) take_customer(i,j,k) <= 1
-		
+
 	forall(j in POINTS_NUMBER, k in ROUTES_NUMBER)
 		sum(i in POINTS_NUMBER) take_customer(i,j,k) = 2
-	
+
 	forall(k in ROUTES_NUMBER)
 		sum(i in LOCATIONS_NUMBER) sum(j in LOCATIONS_NUMBER) take_customer(i,j,k) = 0
-	
-	
+
   	Cost := sum(i in LOCATIONS_NUMBER) (LOCATION_COST(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, k in LOCATIONS_NUMBER) DISTANCE(i,j) * take_customer(i,j,k)
 
+	minimize(Cost)
   	minimize(XPRS_LIN, Cost)
 
   	writeln("Cost: ", getobjval)
+(!
+  	forall(i in ROUTES_NUMBER) do
+		writeln(getsol(build_depot(i)))
+	end-do
+
+	forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in LOCATIONS_NUMBER) do
+		writeln(getsol(take_customer(i,j,k)))
+	end-do
+!)
 
   	!draw_locations
   	!draw_customers
 
- !PROCEDURE-----------------------------------------------------------------------------
+!PROCEDURE--------------------------------------------------------------------
+
 (!
 	procedure draw_locations
 		IVEerase
@@ -146,4 +143,5 @@ model "Location Routing"
 		forall(i in CUSTOMERS_NUMBER) IVEdrawpoint(customers_plot, CUSTOMER_X(i), CUSTOMER_Y(i));
 	end-procedure
 !)
+
 end-model
