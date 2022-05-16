@@ -15,7 +15,7 @@
     },
     "console": {
         "@expanded": true,
-        "@height": "300",
+        "@height": 266.60003662109375,
         "@maximized": "false",
         "json()": {
             "meta": {
@@ -42,8 +42,8 @@
                         "tooltip": "LocationRouting.mos - Stopped",
                         "output": {
                             "id": "output469600",
-                            "width": 726,
-                            "height": 268,
+                            "width": 1304,
+                            "height": 234,
                             "config": {
                                 "runner": "Mosel",
                                 "command": "LocationRouting.mos",
@@ -68,7 +68,7 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 4,
-            "@document": 4,
+            "@document": 2,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
@@ -76,9 +76,9 @@
             "@menu": 3,
             "@menuitem": 8,
             "@pane": 2,
-            "@session": 4,
-            "@tab": 4,
-            "@undoManager": 4,
+            "@session": 2,
+            "@tab": 1,
+            "@undoManager": 2,
             "@welcome": 1
         }
     },
@@ -92,7 +92,7 @@
     "local": {
         "window": {
             "@fullscreen": false,
-            "@maximized": false,
+            "@maximized": true,
             "@minimized": false,
             "@position": "953:0",
             "@size": "958:1004"
@@ -109,6 +109,7 @@
     },
     "panecycle": {
         "json()": [
+            "tab0",
             "tab1"
         ]
     },
@@ -185,14 +186,36 @@
     },
     "tabs": {
         "json()": {
-            "focus": null,
+            "focus": "/LocationRouting.mos",
             "meta": {
                 "accessList": [
-                    "tab2"
+                    "tab0"
                 ]
             },
             "name": "pane0",
-            "nodes": [],
+            "nodes": [
+                {
+                    "type": "tab",
+                    "name": "tab0",
+                    "path": "/LocationRouting.mos",
+                    "className": [
+                        "tab0",
+                        "focus"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652710285275
+                        },
+                        "filter": true,
+                        "title": "LocationRouting.mos",
+                        "tooltip": "/LocationRouting.mos",
+                        "ace": {}
+                    },
+                    "editorType": "ace",
+                    "active": true
+                }
+            ],
             "skin": "editor_tab",
             "skinset": "default",
             "type": "pane"
