@@ -90,6 +90,8 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
+	forall(k in ROUTES_NUMBER) sum(i in LOCATIONS_NUMBER) build_depot(i) = 1
+
 	! Ogni cliente appartiene ad una e una sola route
 	forall(j in CUSTOMERS_NUMBER)
 		sum(i in POINTS_NUMBER, k in ROUTES_NUMBER) take_customer(i,j,k) = 1
@@ -97,10 +99,6 @@ model "Location Routing"
 	! La domanda totale dei clienti di una route deve essere minore o uguale alla capacità del magazzino da cui parte
 	forall(k in ROUTES_NUMBER)
 		sum(i in POINTS_NUMBER, j in CUSTOMERS_NUMBER) CUSTOMER_DEMAND(j) * take_customer(i,j,k) <= depots_capacity
-
-	! Ogni route inizia da un magazzino
-	forall(i in ROUTES_NUMBER, k in ROUTES_NUMBER)
-		sum(j in CUSTOMERS_NUMBER) take_customer(i,j,k) <= 1
 
 	! Ogni nodo ha solo 2 archi incidenti
 	forall(j in POINTS_NUMBER, k in ROUTES_NUMBER)
@@ -125,7 +123,7 @@ model "Location Routing"
 		write(' ')
 	end-do
 
-	forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in LOCATIONS_NUMBER) do
+	forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in ROUTES_NUMBER) do
 		write(getsol(take_customer(i,j,k)))
 		write(' ')
 	end-do

@@ -54,7 +54,7 @@
                                 "name": ""
                             },
                             "running": {
-                                "pid": -58,
+                                "pid": -32,
                                 "name": "output469600",
                                 "running": 2,
                                 "runner": [
@@ -95,10 +95,6 @@
                         "tab4"
                     ],
                     "document": {
-                        "changed": false,
-                        "meta": {
-                            "timestamp": 1652711960796
-                        },
                         "filter": true,
                         "title": "Esempi\\ visti/FacilityLocation2.mos - Stopped",
                         "tooltip": "Esempi\\ visti/FacilityLocation2.mos - Stopped",
@@ -106,6 +102,7 @@
                             "id": "output5665310",
                             "width": 1388,
                             "height": 348,
+                            "scrollTop": 30,
                             "config": {
                                 "runner": "Mosel",
                                 "command": "Esempi\\ visti/FacilityLocation2.mos",
@@ -113,7 +110,12 @@
                                 "toolbar": true,
                                 "name": ""
                             }
-                        }
+                        },
+                        "hash": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                        "meta": {
+                            "timestamp": 1652711960796
+                        },
+                        "changed": false
                     },
                     "editorType": "output",
                     "active": false
@@ -130,7 +132,7 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 5,
-            "@document": 8,
+            "@document": 5,
             "@editorswitch": 1,
             "@fico.mosel.debugger.array.model": 2,
             "@fico.vdl.attributes-panel": 1,
@@ -139,9 +141,9 @@
             "@menu": 6,
             "@menuitem": 15,
             "@pane": 2,
-            "@session": 8,
+            "@session": 4,
             "@tab": 8,
-            "@undoManager": 8,
+            "@undoManager": 5,
             "@welcome": 1
         }
     },
@@ -242,6 +244,11 @@
         },
         "search": {
             "json()": [
+                "ROUTES_NUMBER",
+                "card",
+                "k",
+                "X",
+                "POINTS",
                 "ROUTES",
                 "sum",
                 "vincol",
@@ -260,8 +267,8 @@
             "meta": {
                 "accessList": [
                     "tab0",
-                    "tab6",
-                    "tab3"
+                    "tab3",
+                    "tab6"
                 ]
             },
             "name": "pane0",
@@ -277,7 +284,7 @@
                     "document": {
                         "changed": false,
                         "meta": {
-                            "timestamp": 1652715757253
+                            "timestamp": 1652732218065
                         },
                         "filter": true,
                         "title": "LocationRouting.mos",
@@ -315,14 +322,39 @@
                         "tab6"
                     ],
                     "document": {
-                        "changed": false,
-                        "meta": {
-                            "timestamp": 1652715772478
-                        },
                         "filter": true,
                         "title": "data.dat",
                         "tooltip": "/data.dat",
-                        "ace": {}
+                        "ace": {
+                            "folds": [],
+                            "scrolltop": 0,
+                            "scrollleft": 0,
+                            "selection": {
+                                "start": {
+                                    "row": 0,
+                                    "column": 62
+                                },
+                                "end": {
+                                    "row": 0,
+                                    "column": 62
+                                },
+                                "isBackwards": false
+                            },
+                            "options": {
+                                "guessTabSize": true,
+                                "useWrapMode": false,
+                                "wrapToView": true
+                            },
+                            "firstLineState": {
+                                "row": 79,
+                                "mode": "ace/mode/text"
+                            }
+                        },
+                        "hash": "37bfd022e015d250f431e579c1ab154a44d2509f",
+                        "meta": {
+                            "timestamp": 1652715772523
+                        },
+                        "changed": false
                     },
                     "editorType": "ace",
                     "active": false
