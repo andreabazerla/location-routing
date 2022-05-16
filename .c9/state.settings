@@ -31,7 +31,8 @@
                     "name": "tab1",
                     "path": "",
                     "className": [
-                        "tab1"
+                        "tab1",
+                        "running"
                     ],
                     "document": {
                         "changed": false,
@@ -39,18 +40,47 @@
                             "timestamp": 1652253017741
                         },
                         "filter": true,
-                        "title": "LocationRouting.mos - Stopped",
-                        "tooltip": "LocationRouting.mos - Stopped",
+                        "title": "LocationRouting.mos - Running",
+                        "tooltip": "LocationRouting.mos - Running",
                         "output": {
                             "id": "output469600",
-                            "width": 1688,
+                            "width": 1388,
                             "height": 348,
                             "config": {
                                 "runner": "Mosel",
                                 "command": "LocationRouting.mos",
-                                "debug": false,
+                                "debug": true,
                                 "toolbar": true,
                                 "name": ""
+                            },
+                            "running": {
+                                "pid": -58,
+                                "name": "output469600",
+                                "running": 2,
+                                "runner": [
+                                    {
+                                        "caption": "Mosel",
+                                        "cmd": [
+                                            "C:\\xpressmp\\workbench\\.c9\\node.exe",
+                                            "C:\\xpressmp\\workbench\\.c9\\node_modules\\mosel-runner\\bin\\mosel-runner",
+                                            "run",
+                                            "${debug?--debug=6167}",
+                                            "--basedir",
+                                            "$project_path",
+                                            "$file",
+                                            "--stack-trace=20",
+                                            "$args"
+                                        ],
+                                        "cmdCleanup": [
+                                            "true"
+                                        ],
+                                        "debugger": "mosel",
+                                        "debugport": 6167,
+                                        "selector": "\\.(mos|py)$",
+                                        "$builtin": true
+                                    }
+                                ],
+                                "debug": true
                             }
                         }
                     },
@@ -74,7 +104,7 @@
                         "tooltip": "Esempi\\ visti/FacilityLocation2.mos - Stopped",
                         "output": {
                             "id": "output5665310",
-                            "width": 1688,
+                            "width": 1388,
                             "height": 348,
                             "config": {
                                 "runner": "Mosel",
@@ -100,18 +130,18 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 5,
-            "@document": 7,
+            "@document": 8,
             "@editorswitch": 1,
-            "@fico.mosel.debugger.array.model": 1,
+            "@fico.mosel.debugger.array.model": 2,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
             "@form": 4,
             "@menu": 6,
             "@menuitem": 15,
             "@pane": 2,
-            "@session": 7,
-            "@tab": 7,
-            "@undoManager": 7,
+            "@session": 8,
+            "@tab": 8,
+            "@undoManager": 8,
             "@welcome": 1
         }
     },
@@ -148,7 +178,7 @@
     },
     "panels": {
         "@active-left": "tree",
-        "@active-right": "none",
+        "@active-right": "debugger",
         "commands.panel": {
             "@enabled": "false",
             "@name": "commands.panel"
