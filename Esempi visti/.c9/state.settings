@@ -10,57 +10,10 @@
             "@wraparound": "true"
         }
     },
-    "breakpoints": {
-        "json()": []
-    },
     "console": {
-        "@expanded": true,
+        "@expanded": "false",
         "@height": "300",
-        "@maximized": "false",
-        "json()": {
-            "meta": {
-                "accessList": [
-                    "tab1"
-                ]
-            },
-            "name": "pane1",
-            "nodes": [
-                {
-                    "type": "tab",
-                    "name": "tab1",
-                    "path": "",
-                    "className": [
-                        "tab1"
-                    ],
-                    "document": {
-                        "changed": false,
-                        "meta": {
-                            "timestamp": 1652253017741
-                        },
-                        "filter": true,
-                        "title": "LocationRouting.mos - Stopped",
-                        "tooltip": "LocationRouting.mos - Stopped",
-                        "output": {
-                            "id": "output469600",
-                            "width": 726,
-                            "height": 268,
-                            "config": {
-                                "runner": "Mosel",
-                                "command": "LocationRouting.mos",
-                                "debug": false,
-                                "toolbar": true,
-                                "name": ""
-                            }
-                        }
-                    },
-                    "editorType": "output",
-                    "active": true
-                }
-            ],
-            "skin": "editor_tab",
-            "skinset": "default",
-            "type": "pane"
-        }
+        "@maximized": "false"
     },
     "ext": {
         "counters": {
@@ -68,17 +21,17 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 4,
-            "@document": 4,
+            "@document": 3,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
             "@form": 4,
             "@menu": 3,
             "@menuitem": 8,
-            "@pane": 2,
-            "@session": 4,
-            "@tab": 4,
-            "@undoManager": 4,
+            "@pane": 1,
+            "@session": 3,
+            "@tab": 3,
+            "@undoManager": 3,
             "@welcome": 1
         }
     },
@@ -94,7 +47,7 @@
             "@fullscreen": false,
             "@maximized": false,
             "@minimized": false,
-            "@position": "953:0",
+            "@position": "-7:0",
             "@size": "958:1004"
         }
     },
@@ -104,12 +57,9 @@
     "nak": {
         "@installed": true
     },
-    "od": {
-        "@last-run-config": "path:LocationRouting.mos"
-    },
     "panecycle": {
         "json()": [
-            "tab1"
+            "tab2"
         ]
     },
     "panels": {
@@ -164,35 +114,70 @@
         }
     },
     "recentfiles": {
-        "json()": []
+        "json()": [
+            {
+                "type": "tab",
+                "name": "tab1",
+                "path": "/FacilityLocation2.mos",
+                "className": [
+                    "tab1"
+                ],
+                "document": {
+                    "changed": false,
+                    "meta": {
+                        "timestamp": 1652696534363
+                    },
+                    "filter": true,
+                    "title": "FacilityLocation2.mos",
+                    "tooltip": "/FacilityLocation2.mos",
+                    "ace": {}
+                },
+                "editorType": "ace",
+                "active": false
+            }
+        ]
     },
     "search-history": {
-        "replace": {
-            "json()": [
-                "]",
-                "[",
-                " [",
-                " "
-            ]
-        },
         "search": {
             "json()": [
-                ")",
-                "(",
-                ","
+                "bigM",
+                "COSTO_FISSO"
             ]
         }
     },
     "tabs": {
         "json()": {
-            "focus": null,
+            "focus": "/FacilityLocation2.mos",
             "meta": {
                 "accessList": [
-                    "tab2"
+                    "tab2",
+                    "tab0"
                 ]
             },
             "name": "pane0",
-            "nodes": [],
+            "nodes": [
+                {
+                    "type": "tab",
+                    "name": "tab2",
+                    "path": "/FacilityLocation2.mos",
+                    "className": [
+                        "tab2",
+                        "focus"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652696534363
+                        },
+                        "filter": true,
+                        "title": "FacilityLocation2.mos",
+                        "tooltip": "/FacilityLocation2.mos",
+                        "ace": {}
+                    },
+                    "editorType": "ace",
+                    "active": true
+                }
+            ],
             "skin": "editor_tab",
             "skinset": "default",
             "type": "pane"
@@ -200,7 +185,7 @@
     },
     "tree_selection": {
         "json()": [
-            "/data.dat"
+            "/FacilityLocation2.mos"
         ]
     },
     "welcome": {
