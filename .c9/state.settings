@@ -100,17 +100,18 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 5,
-            "@document": 5,
+            "@document": 7,
             "@editorswitch": 1,
+            "@fico.mosel.debugger.array.model": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
             "@form": 4,
             "@menu": 6,
             "@menuitem": 15,
             "@pane": 2,
-            "@session": 5,
-            "@tab": 5,
-            "@undoManager": 5,
+            "@session": 7,
+            "@tab": 7,
+            "@undoManager": 7,
             "@welcome": 1
         }
     },
@@ -229,6 +230,7 @@
             "meta": {
                 "accessList": [
                     "tab0",
+                    "tab6",
                     "tab3"
                 ]
             },
@@ -245,7 +247,7 @@
                     "document": {
                         "changed": false,
                         "meta": {
-                            "timestamp": 1652714736610
+                            "timestamp": 1652715757253
                         },
                         "filter": true,
                         "title": "LocationRouting.mos",
@@ -274,6 +276,26 @@
                     },
                     "editorType": "ace",
                     "active": false
+                },
+                {
+                    "type": "tab",
+                    "name": "tab6",
+                    "path": "/data.dat",
+                    "className": [
+                        "tab6"
+                    ],
+                    "document": {
+                        "changed": false,
+                        "meta": {
+                            "timestamp": 1652715772478
+                        },
+                        "filter": true,
+                        "title": "data.dat",
+                        "tooltip": "/data.dat",
+                        "ace": {}
+                    },
+                    "editorType": "ace",
+                    "active": false
                 }
             ],
             "skin": "editor_tab",
@@ -283,7 +305,7 @@
     },
     "tree_selection": {
         "json()": [
-            "/Esempi visti/FacilityLocation2.mos"
+            "/data.dat"
         ]
     },
     "welcome": {

@@ -90,8 +90,6 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
-	sum(h in LOCATIONS_NUMBER) build_depot(h)
-
 	! Ogni cliente appartiene ad una e una sola route
 	forall(j in CUSTOMERS_NUMBER)
 		sum(i in POINTS_NUMBER, k in ROUTES_NUMBER) take_customer(i,j,k) = 1
