@@ -1,31 +1,63 @@
 model Versione_1_con_modifiche
 uses "mmxprs";
-setparam("XPRS_VERBOSE", true)
+!setparam("XPRS_VERBOSE", true)
 
 declarations
-	LOCALITA= 1..7
-	CLIENTI= 1..10
+	WTMAX = 10000
+	LOCALITA= 1..8
+	CLIENTI= 101..110
 	Q=20
 	COSTO_FISSO: array(LOCALITA) of integer
 	COSTO_SERVIZIO: array(LOCALITA+CLIENTI, LOCALITA+CLIENTI) of integer
 	DOMANDA: array(CLIENTI) of integer
 	x: array(LOCALITA) of mpvar
-	y: array(CLIENTI+LOCALITA, CLIENTI+LOCALITA, LOCALITA) of mpvar
+	y: array(LOCALITA+CLIENTI, LOCALITA+CLIENTI, LOCALITA) of mpvar
 	z: array(CLIENTI, LOCALITA) of mpvar
 	Objective:linctr
 end-declarations
 
-
+writeln(LOCALITA+CLIENTI)
 !---------inizializzazione
+writeln("COSTOFISSO")
+forall(i in LOCALITA)do
+	COSTO_FISSO(i) := ceil(real( strfmt(random*100,2,2)))
+	write(COSTO_FISSO(i), "\t")
+end-do
 
-forall(i in LOCALITA)
-	COSTO_FISSO(i) := ceil(real( strfmt(random*10,2,2)))
+writeln("\nCOSTO_SERVIZIO")
+forall(i in LOCALITA+CLIENTI)do
+	forall(j in LOCALITA+CLIENTI|i>=j)do
+		if(i=j) then
+			COSTO_SERVIZIO(i,j) := 0
+		else
+			COSTO_SERVIZIO(i, j) := ceil(real( strfmt(random*25,2,2)))
+			COSTO_SERVIZIO(j, i) := COSTO_SERVIZIO(i,j)		
+		end-if				
+	end-do	
+end-do
 
-forall(i in LOCALITA, j in CLIENTI)
-	COSTO_SERVIZIO(i, j) := ceil(real( strfmt(random*10,2,2)))
+forall(i in LOCALITA) do
+	forall(j in LOCALITA) do
+		if(i=j) then
+			COSTO_SERVIZIO(i,j) := 0
+		else
+			COSTO_SERVIZIO(i, j) := WTMAX
+			COSTO_SERVIZIO(j, i) := COSTO_SERVIZIO(i,j)		
+		end-if				
+	end-do	
+end-do
+
+forall(i in LOCALITA+CLIENTI) do
+	forall(j in LOCALITA+CLIENTI) 
+		write(COSTO_SERVIZIO(i,j), "\t")
+	writeln("")
+end-do
 	
-forall(i in CLIENTI)
+writeln("\nDOMANDA")
+forall(i in CLIENTI)do
 	DOMANDA(i) := ceil(real( strfmt(random*10,2,2)))
+	write(DOMANDA(i), "\t")
+end-do
 	
 forall(i in LOCALITA)
 	x(i) is_binary
@@ -38,28 +70,70 @@ forall(i in CLIENTI, j in LOCALITA)
 	
 !-------Vincoli
 
+!vincolo di quantita
 forall(j in LOCALITA)
 	sum(i in CLIENTI) DOMANDA(i)*z(i,j) <= Q*x(j)
 
+!stella uscente del magazzino M->C
 forall(i in LOCALITA)
 	sum(j in CLIENTI) y(i,j,i) = 1*x(i)
 	
+!stella entrante magazzino C->M
 forall(j in LOCALITA)
 	sum(i in CLIENTI) y(i,j,j) = 1*x(j)
-
+	
+!Stella uscente dei clienti
 forall(i in CLIENTI, k in LOCALITA)
 	sum(j in LOCALITA+CLIENTI) y(i,j,k) = 1*x(k)
 	
+!stella entrante dei clienti
 forall(j in CLIENTI, k in LOCALITA)
 	sum(i in LOCALITA+CLIENTI) y(i,j,k) = 1*x(k)
 	
+!Zero archi verso un altro magazzino
 forall(i in LOCALITA)
-	sum(j in LOCALITA) y(i,j,i) = 0*x(i)
-	
+	sum(j in LOCALITA|i<>j) y(i,j,i) = 0
+
+!Ogni magazzino ha almeno un cliente associato
 forall(j in LOCALITA)
 	sum(i in CLIENTI) z(i,j) >= 1*x(j)
 	
+!per ogni route, l'arco i->i non esiste
+forall(k in LOCALITA)
+	sum(i in LOCALITA+CLIENTI) y(i,i,k) = 0
+	
+!ogni cliente è associato a solo un magazzino aperto
+forall(j in CLIENTI)
+	sum(i in LOCALITA+CLIENTI)sum(k in LOCALITA) y(i,j,k) = 1
+	
 Objective := sum(i in LOCALITA) COSTO_FISSO(i)*x(i) + sum(k in LOCALITA)sum(j in LOCALITA+CLIENTI)sum(i in LOCALITA+CLIENTI) COSTO_SERVIZIO(i,j)*y(i,j,k)
+
+minimize(Objective)
+
+
+writeln("\n", getobjval)
+forall(i in LOCALITA)
+	write(getsol(x(i)), "\t")
+	
+write("\n\n\n")
+
+forall(i in CLIENTI)do
+	forall(j in LOCALITA)
+		write(getsol(z(i,j)), "\t")
+	writeln("")
+end-do
+
+write("\n\n\n")
+
+forall(k in LOCALITA) do
+	writeln("Route - ", k)
+	forall(i in CLIENTI+LOCALITA)do
+		forall(j in CLIENTI+LOCALITA)
+			write(getsol(y(i,j,k)), "\t")
+		write("\n")
+	end-do
+end-do
+
 
 minimize(XPRS_LIN, Objective)
 

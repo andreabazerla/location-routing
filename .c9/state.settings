@@ -51,6 +51,38 @@
                                 "debug": false,
                                 "toolbar": true,
                                 "name": ""
+<<<<<<< HEAD
+=======
+                            },
+                            "running": {
+                                "pid": -32,
+                                "name": "output469600",
+                                "running": 2,
+                                "runner": [
+                                    {
+                                        "caption": "Mosel",
+                                        "cmd": [
+                                            "C:\\xpressmp\\workbench\\.c9\\node.exe",
+                                            "C:\\xpressmp\\workbench\\.c9\\node_modules\\mosel-runner\\bin\\mosel-runner",
+                                            "run",
+                                            "${debug?--debug=6167}",
+                                            "--basedir",
+                                            "$project_path",
+                                            "$file",
+                                            "--stack-trace=20",
+                                            "$args"
+                                        ],
+                                        "cmdCleanup": [
+                                            "true"
+                                        ],
+                                        "debugger": "mosel",
+                                        "debugport": 6167,
+                                        "selector": "\\.(mos|py)$",
+                                        "$builtin": true
+                                    }
+                                ],
+                                "debug": true
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
                             }
                         }
                     },
@@ -70,9 +102,15 @@
                         "tooltip": "Esempi\\ visti/FacilityLocation2.mos - Idle",
                         "output": {
                             "id": "output5665310",
+<<<<<<< HEAD
                             "width": 1304,
                             "height": 56,
                             "scrollTop": -1,
+=======
+                            "width": 1388,
+                            "height": 348,
+                            "scrollTop": 30,
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
                             "config": {
                                 "runner": "Mosel",
                                 "command": "Esempi\\ visti/FacilityLocation2.mos",
@@ -101,7 +139,11 @@
             "@ace": 1,
             "@acestatus": 1,
             "@base-step-wizard": 2,
+<<<<<<< HEAD
             "@divider": 4,
+=======
+            "@divider": 5,
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
             "@document": 5,
             "@editorswitch": 1,
             "@fico.mosel.debugger.array.model": 2,
@@ -112,7 +154,11 @@
             "@menuitem": 8,
             "@pane": 2,
             "@session": 4,
+<<<<<<< HEAD
             "@tab": 3,
+=======
+            "@tab": 8,
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
             "@undoManager": 5,
             "@welcome": 1
         }
@@ -214,6 +260,11 @@
         },
         "search": {
             "json()": [
+                "ROUTES_NUMBER",
+                "card",
+                "k",
+                "X",
+                "POINTS",
                 "ROUTES",
                 "sum",
                 "vincol",
@@ -233,6 +284,10 @@
                 "accessList": [
                     "tab2",
                     "tab0",
+<<<<<<< HEAD
+=======
+                    "tab3",
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
                     "tab6"
                 ]
             },
@@ -249,7 +304,11 @@
                     "document": {
                         "changed": true,
                         "meta": {
+<<<<<<< HEAD
                             "timestamp": 1652986646094
+=======
+                            "timestamp": 1652732218065
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
                         },
                         "filter": true,
                         "title": "LocationRouting.mos",
@@ -313,6 +372,7 @@
                         "focus"
                     ],
                     "document": {
+<<<<<<< HEAD
                         "changed": false,
                         "meta": {
                             "timestamp": 1652390964440
@@ -321,6 +381,41 @@
                         "title": "FacilityLocation2.mos",
                         "tooltip": "/Esempi visti/FacilityLocation2.mos",
                         "ace": {}
+=======
+                        "filter": true,
+                        "title": "data.dat",
+                        "tooltip": "/data.dat",
+                        "ace": {
+                            "folds": [],
+                            "scrolltop": 0,
+                            "scrollleft": 0,
+                            "selection": {
+                                "start": {
+                                    "row": 0,
+                                    "column": 62
+                                },
+                                "end": {
+                                    "row": 0,
+                                    "column": 62
+                                },
+                                "isBackwards": false
+                            },
+                            "options": {
+                                "guessTabSize": true,
+                                "useWrapMode": false,
+                                "wrapToView": true
+                            },
+                            "firstLineState": {
+                                "row": 79,
+                                "mode": "ace/mode/text"
+                            }
+                        },
+                        "hash": "37bfd022e015d250f431e579c1ab154a44d2509f",
+                        "meta": {
+                            "timestamp": 1652715772523
+                        },
+                        "changed": false
+>>>>>>> dabe375ad5fc461558425c73e17e08e2ee9cc914
                     },
                     "editorType": "ace",
                     "active": true
