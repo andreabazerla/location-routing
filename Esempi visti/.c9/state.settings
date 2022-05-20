@@ -21,7 +21,7 @@
             "@acestatus": 1,
             "@base-step-wizard": 2,
             "@divider": 4,
-            "@document": 3,
+            "@document": 1,
             "@editorswitch": 1,
             "@fico.vdl.attributes-panel": 1,
             "@fico.vdl.palette-panel": 1,
@@ -29,9 +29,9 @@
             "@menu": 3,
             "@menuitem": 8,
             "@pane": 1,
-            "@session": 3,
+            "@session": 1,
             "@tab": 3,
-            "@undoManager": 3,
+            "@undoManager": 1,
             "@welcome": 1
         }
     },
@@ -114,28 +114,7 @@
         }
     },
     "recentfiles": {
-        "json()": [
-            {
-                "type": "tab",
-                "name": "tab1",
-                "path": "/FacilityLocation2.mos",
-                "className": [
-                    "tab1"
-                ],
-                "document": {
-                    "changed": false,
-                    "meta": {
-                        "timestamp": 1652696534363
-                    },
-                    "filter": true,
-                    "title": "FacilityLocation2.mos",
-                    "tooltip": "/FacilityLocation2.mos",
-                    "ace": {}
-                },
-                "editorType": "ace",
-                "active": false
-            }
-        ]
+        "json()": []
     },
     "search-history": {
         "search": {
@@ -150,8 +129,7 @@
             "focus": "/FacilityLocation2.mos",
             "meta": {
                 "accessList": [
-                    "tab2",
-                    "tab0"
+                    "tab2"
                 ]
             },
             "name": "pane0",
@@ -167,7 +145,7 @@
                     "document": {
                         "changed": false,
                         "meta": {
-                            "timestamp": 1652696534363
+                            "timestamp": 1652390964440
                         },
                         "filter": true,
                         "title": "FacilityLocation2.mos",

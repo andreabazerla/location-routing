@@ -1,0 +1,67 @@
+model Versione_1_con_modifiche
+uses "mmxprs";
+setparam("XPRS_VERBOSE", true)
+
+declarations
+	LOCALITA= 1..7
+	CLIENTI= 1..10
+	Q=20
+	COSTO_FISSO: array(LOCALITA) of integer
+	COSTO_SERVIZIO: array(LOCALITA+CLIENTI, LOCALITA+CLIENTI) of integer
+	DOMANDA: array(CLIENTI) of integer
+	x: array(LOCALITA) of mpvar
+	y: array(CLIENTI+LOCALITA, CLIENTI+LOCALITA, LOCALITA) of mpvar
+	z: array(CLIENTI, LOCALITA) of mpvar
+	Objective:linctr
+end-declarations
+
+
+!---------inizializzazione
+
+forall(i in LOCALITA)
+	COSTO_FISSO(i) := ceil(real( strfmt(random*10,2,2)))
+
+forall(i in LOCALITA, j in CLIENTI)
+	COSTO_SERVIZIO(i, j) := ceil(real( strfmt(random*10,2,2)))
+	
+forall(i in CLIENTI)
+	DOMANDA(i) := ceil(real( strfmt(random*10,2,2)))
+	
+forall(i in LOCALITA)
+	x(i) is_binary
+	
+forall(i in LOCALITA+CLIENTI, j in LOCALITA+CLIENTI, k in LOCALITA)
+	y(i,j,k) is_binary
+	
+forall(i in CLIENTI, j in LOCALITA)
+	z(i,j) is_binary
+	
+!-------Vincoli
+
+forall(j in LOCALITA)
+	sum(i in CLIENTI) DOMANDA(i)*z(i,j) <= Q*x(j)
+
+forall(i in LOCALITA)
+	sum(j in CLIENTI) y(i,j,i) = 1*x(i)
+	
+forall(j in LOCALITA)
+	sum(i in CLIENTI) y(i,j,j) = 1*x(j)
+
+forall(i in CLIENTI, k in LOCALITA)
+	sum(j in LOCALITA+CLIENTI) y(i,j,k) = 1*x(k)
+	
+forall(j in CLIENTI, k in LOCALITA)
+	sum(i in LOCALITA+CLIENTI) y(i,j,k) = 1*x(k)
+	
+forall(i in LOCALITA)
+	sum(j in LOCALITA) y(i,j,i) = 0*x(i)
+	
+forall(j in LOCALITA)
+	sum(i in CLIENTI) z(i,j) >= 1*x(j)
+	
+Objective := sum(i in LOCALITA) COSTO_FISSO(i)*x(i) + sum(k in LOCALITA)sum(j in LOCALITA+CLIENTI)sum(i in LOCALITA+CLIENTI) COSTO_SERVIZIO(i,j)*y(i,j,k)
+
+minimize(XPRS_LIN, Objective)
+
+writeln(getobjval)
+end-model
