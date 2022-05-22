@@ -1,12 +1,12 @@
 model "Location Routing"
-	uses "mmxprs"!, "mmive"
+	uses "mmxprs", "mmive"
 
   	version 1.0.0
 
   	setparam("XPRS_VERBOSE", true)
 
-	!forward procedure draw_locations
-  	!forward procedure draw_customers
+	forward procedure draw_locations
+  	forward procedure draw_customers
 
   	declarations
     	locations_number: integer
@@ -15,53 +15,73 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 5
-  	customers_number := 15
-  	points_number := locations_number + customers_number
-  	depots_capacity := 10
+    locations_number := 3
+  	customers_number := 10
 
-	declarations
-		LOCATIONS_NUMBER = 1..locations_number
-		LOCATION_X, LOCATION_Y, LOCATION_COST: array(LOCATIONS_NUMBER) of integer
+  	points_number := locations_number + customers_number
+
+  	depots_capacity := 15
+  	customer_max_demand := 10
+  	depot_max_cost := 10
+  	point_max_range := 100
+
+  	LOCATIONS_NUMBER := 1..locations_number
+  	CUSTOMERS_NUMBER := 1..customers_number
+
+  	POINTS_NUMBER := 1..points_number
+
+  	ROUTES_NUMBER := 1..locations_number
+
+  	declarations
+  		!LOCATION_X, LOCATION_Y, LOCATION_COST: array(LOCATIONS_NUMBER) of integer
 		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..3) of integer
 
-		CUSTOMERS_NUMBER = 1..customers_number
-		CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
+		!CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND : array(CUSTOMERS_NUMBER) of integer
 		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..3) of integer
 
-		POINTS_NUMBER = 1..points_number
 		POINTS: array(POINTS_NUMBER) of array(1..3) of integer
 
-		build_depot : array(LOCATIONS_NUMBER) of mpvar
+		build_depot: array(LOCATIONS_NUMBER) of mpvar
 
-		ROUTES_NUMBER = 1..locations_number
+		DISTANCE: array(POINTS_NUMBER, POINTS_NUMBER) of real
+		take_customer: array(POINTS_NUMBER, POINTS_NUMBER, ROUTES_NUMBER) of mpvar
 
-		DISTANCE : array(POINTS_NUMBER, POINTS_NUMBER) of real
-		take_customer : array(POINTS_NUMBER, POINTS_NUMBER, ROUTES_NUMBER) of mpvar
-
-		Cost : linctr
-	end-declarations
+		Objective: linctr
+  	end-declarations
 
 	forall(i in LOCATIONS_NUMBER) build_depot(i) is_binary
 	forall(i in POINTS_NUMBER, j in POINTS_NUMBER, k in ROUTES_NUMBER) take_customer(i,j,k) is_binary
 
+  	(!
   	initializations from "data.dat"
 		[LOCATION_X, LOCATION_Y, LOCATION_COST] as 'LOCATIONS'
 		[CUSTOMER_X, CUSTOMER_Y, CUSTOMER_DEMAND] as 'CUSTOMERS'
   	end-initializations
+  	!)
 
   	forall(i in LOCATIONS_NUMBER) do
-		LOCATIONS(i,1) := LOCATION_X(i)
-		LOCATIONS(i,2) := LOCATION_Y(i)
-		LOCATIONS(i,3) := LOCATION_COST(i)
+		!LOCATIONS(i,1) := LOCATION_X(i)
+		!LOCATIONS(i,2) := LOCATION_Y(i)
+		!LOCATIONS(i,3) := LOCATION_COST(i)
+
+		LOCATIONS(i,1) := integer(round((point_max_range*random)))
+		LOCATIONS(i,2) := integer(round((point_max_range*random)))
+		LOCATIONS(i,3) := integer(round((depot_max_cost*random)+0.5))
   	end-do
 
+  	writeln(LOCATIONS)
+
   	forall(i in CUSTOMERS_NUMBER) do
-		CUSTOMERS(i,1) := CUSTOMER_X(i)
-		CUSTOMERS(i,2) := CUSTOMER_Y(i)
-		CUSTOMERS(i,3) := CUSTOMER_DEMAND(i)
+		!CUSTOMERS(i,1) := CUSTOMER_X(i)
+		!CUSTOMERS(i,2) := CUSTOMER_Y(i)
+		!CUSTOMERS(i,3) := CUSTOMER_DEMAND(i)
+		
+		CUSTOMERS(i,1) := integer(round((point_max_range*random)))
+		CUSTOMERS(i,2) := integer(round((point_max_range*random)))
+		CUSTOMERS(i,3) := integer(round((customer_max_demand*random)+0.5))
 	end-do
 
+	(!
 	contatore := 0
 	forall(i in LOCATIONS_NUMBER) do
 		POINTS(i,1) := LOCATION_X(i)
@@ -75,11 +95,9 @@ model "Location Routing"
 		POINTS(contatore+i,2) := CUSTOMER_Y(i)
 		POINTS(contatore+i,3) := CUSTOMER_DEMAND(i)
 	end-do
+	!)
 
-	writeln(LOCATIONS)
-	writeln(CUSTOMERS)
-	writeln(POINTS)
-
+	(!
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
 			DISTANCE(i,j) := sqrt((POINTS(j,1)-POINTS(i,1))^2 + (POINTS(j,2)-POINTS(i,2))^2)
@@ -87,9 +105,11 @@ model "Location Routing"
 		end-do
 		write("\n")
 	end-do
+	!)
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
+	(!
 	forall(k in ROUTES_NUMBER) sum(i in LOCATIONS_NUMBER) build_depot(i) = 1
 
 	! Ogni cliente appartiene ad una e una sola route
@@ -104,20 +124,22 @@ model "Location Routing"
 	forall(j in POINTS_NUMBER, k in ROUTES_NUMBER)
 		sum(i in POINTS_NUMBER) take_customer(i,j,k) = 2
 
-	! Un veicolo non puÃ² da un magazzino andare ad un altro magazzino
+	! Un veicolo non può da un magazzino andare ad un altro magazzino
 	forall(k in ROUTES_NUMBER)
 		sum(i in LOCATIONS_NUMBER, j in LOCATIONS_NUMBER) take_customer(i,j,k) = 0
+	!)
 
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
-  	Cost := sum(i in LOCATIONS_NUMBER) (LOCATION_COST(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, k in ROUTES_NUMBER) DISTANCE(i,j) * take_customer(i,j,k)
+  	!Objective := sum(i in LOCATIONS_NUMBER) (LOCATION_COST(i) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER, k in ROUTES_NUMBER) DISTANCE(i,j) * take_customer(i,j,k)
 
-	minimize(Cost)
-	writeln("Cost = ", getobjval)
+	!minimize(Cost)
+	!writeln("Cost = ", getobjval)
 
-  	minimize(XPRS_LIN, Cost)
-  	writeln("Cost = ", getobjval)
+  	!minimize(XPRS_LIN, Cost)
+  	!writeln("Cost = ", getobjval)
 
+	(!
   	forall(i in ROUTES_NUMBER) do
 		write(getsol(build_depot(i)))
 		write(' ')
@@ -127,27 +149,26 @@ model "Location Routing"
 		write(getsol(take_customer(i,j,k)))
 		write(' ')
 	end-do
+	!)
 
-  	!draw_locations
-  	!draw_customers
+  	draw_locations
+  	draw_customers
 
 !PROCEDURE--------------------------------------------------------------------
-
-(!
+	
 	procedure draw_locations
 		IVEerase
-		IVEzoom(min(i in LOCATIONS_NUMBER) LOCATION_X(i)-10, min(i in LOCATIONS_NUMBER) LOCATION_Y(i)-10,
-				max(i in LOCATIONS_NUMBER) LOCATION_X(i)+10, max(i in LOCATIONS_NUMBER) LOCATION_Y(i)+10)
+		IVEzoom(0,0,point_max_range,point_max_range)
 		locations_plot := IVEaddplot("Locations", IVE_RED)
-		forall(i in LOCATIONS_NUMBER) IVEdrawpoint(locations_plot, LOCATION_X(i), LOCATION_Y(i));
+		forall(i in LOCATIONS_NUMBER) IVEdrawpoint(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2));
+		forall(i in LOCATIONS_NUMBER) IVEdrawlabel(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2), strfmt(LOCATIONS(i,3),2));
 	end-procedure
 
 	procedure draw_customers
-		IVEzoom(min(i in CUSTOMERS_NUMBER) CUSTOMER_X(i)-10, min(i in CUSTOMERS_NUMBER) CUSTOMER_Y(i)-10,
-				max(i in CUSTOMERS_NUMBER) CUSTOMER_X(i)+10, max(i in CUSTOMERS_NUMBER) CUSTOMER_Y(i)+10)
+		IVEzoom(0,0,point_max_range,point_max_range)
 		customers_plot := IVEaddplot("Customers", IVE_BLACK)
-		forall(i in CUSTOMERS_NUMBER) IVEdrawpoint(customers_plot, CUSTOMER_X(i), CUSTOMER_Y(i));
+		forall(i in CUSTOMERS_NUMBER) IVEdrawpoint(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2));
+		forall(i in CUSTOMERS_NUMBER) IVEdrawlabel(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
 	end-procedure
-!)
 
 end-model

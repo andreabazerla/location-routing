@@ -4,14 +4,15 @@ uses "mmxprs";
 
 declarations
 	WTMAX = 10000
-	LOCALITA= 1..8
-	CLIENTI= 101..110
-	Q=20
+	LOCALITA= 1..5
+	CLIENTI= 10..20
+	Q=30
+	POINTS = LOCALITA+CLIENTI
 	COSTO_FISSO: array(LOCALITA) of integer
-	COSTO_SERVIZIO: array(LOCALITA+CLIENTI, LOCALITA+CLIENTI) of integer
+	COSTO_SERVIZIO: array(POINTS, POINTS) of integer
 	DOMANDA: array(CLIENTI) of integer
 	x: array(LOCALITA) of mpvar
-	y: array(LOCALITA+CLIENTI, LOCALITA+CLIENTI, LOCALITA) of mpvar
+	y: array(POINTS, POINTS, LOCALITA) of mpvar
 	z: array(CLIENTI, LOCALITA) of mpvar
 	Objective:linctr
 end-declarations
@@ -106,7 +107,7 @@ forall(k in LOCALITA)
 forall(j in CLIENTI)
 	sum(i in LOCALITA+CLIENTI)sum(k in LOCALITA) y(i,j,k) = 1
 	
-Objective := sum(i in LOCALITA) COSTO_FISSO(i)*x(i) + sum(k in LOCALITA)sum(j in LOCALITA+CLIENTI)sum(i in LOCALITA+CLIENTI) COSTO_SERVIZIO(i,j)*y(i,j,k)
+Objective := sum(i in LOCALITA) COSTO_FISSO(i)*x(i) + sum(k in LOCALITA, j in LOCALITA+CLIENTI, i in LOCALITA+CLIENTI) COSTO_SERVIZIO(i,j)*y(i,j,k)
 
 minimize(Objective)
 
