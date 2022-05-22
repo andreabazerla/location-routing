@@ -132,17 +132,21 @@ model "Location Routing"
 	!forall(j in LOCATIONS_NUMBER)
 	!	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) * customer_depot(i,j) <= depots_capacity * build_depot(j)
 	
+	!sum(i in POINTS_NUMBER, j in POINTS_NUMBER | i=j) edge_exists(i,j) = 0
+	
+	forall(i in POINTS_NUMBER) do
+		sum(j in POINTS_NUMBER) edge_exists(i,j) = 1
+		sum(j in POINTS_NUMBER) edge_exists(j,i) = 1
+	end-do
+		
+	!forall(i in locations_number+1..locations_number*2)
+	!	sum(j in 1..locations_number | i<>j) edge_exists(i,j) = 1
+	
 	forall(i in POINTS_NUMBER)
-		sum(j in POINTS_NUMBER | i=j) edge_exists(i,j) = 0
+		sum(j in POINTS_NUMBER | i<>j) edge_exists(i,j) <= points_number-1
 	
 	forall(j in POINTS_NUMBER)
-		sum(i in POINTS_NUMBER | i<>j) edge_exists(i,j) = 1
-	
-	forall(i in POINTS_NUMBER)
-		sum(j in POINTS_NUMBER | i<>j) edge_exists(i,j) = 1
-		
-	forall(i in locations_number+1..locations_number*2)
-		sum(j in 1..locations_number | i<>j) edge_exists(i,j) = 1
+		sum(i in POINTS_NUMBER | i<>j) edge_exists(i,j) = 2
 
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
