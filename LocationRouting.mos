@@ -34,7 +34,8 @@ model "Location Routing"
   	declarations
 		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..3) of integer
 		LOCATIONS_START: array(LOCATIONS_NUMBER) of array(1..3) of integer
-		LOCATIONS_END: array(LOCATIONS_NUMBER) of array(1..3) of integer
+		LOCATIONS_END: array(locations_number+1..locations_number*2) of array(1..3) of integer
+		LOCATIONS_START_END: array(1..locations_number*2) of array(1..3) of integer
 
 		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..3) of integer
 
@@ -56,22 +57,41 @@ model "Location Routing"
 
 !INITIALIZATION OF ARRAYS-----------------------------------------------------
 
+	contatore := 1
   	forall(i in LOCATIONS_NUMBER) do
 		LOCATIONS(i,1) := integer(round((point_max_range*random)))
 		LOCATIONS(i,2) := integer(round((point_max_range*random)))
 		LOCATIONS(i,3) := integer(round((depot_max_cost*random)+0.5))
+	end-do
 		
+	forall(i in LOCATIONS_NUMBER) do
 		LOCATIONS_START(i,1) := LOCATIONS(i,1)
 		LOCATIONS_START(i,2) := LOCATIONS(i,2)
 		LOCATIONS_START(i,3) := LOCATIONS(i,3)
-		
-		LOCATIONS_END(i,1) := LOCATIONS(i,1)
-		LOCATIONS_END(i,2) := LOCATIONS(i,2)
-		LOCATIONS_END(i,3) := LOCATIONS(i,3)
-  	end-do
+		contatore := i
+	end-do
+  	forall(i in LOCATIONS_NUMBER) do
+  		LOCATIONS_END(contatore+i,1) := LOCATIONS(i,1)
+		LOCATIONS_END(contatore+i,2) := LOCATIONS(i,2)
+		LOCATIONS_END(contatore+i,3) := LOCATIONS(i,3)
+	end-do
+  	
   	writeln(LOCATIONS)
   	writeln(LOCATIONS_START)
   	writeln(LOCATIONS_END)
+  	
+  	forall(i in LOCATIONS_NUMBER) do
+  		LOCATIONS_START_END(i,1) := LOCATIONS_START(i,1)
+  		LOCATIONS_START_END(i,2) := LOCATIONS_START(i,2)
+  		LOCATIONS_START_END(i,3) := LOCATIONS_START(i,3)
+  		contatore := i
+  	end-do
+  	forall(i in LOCATIONS_NUMBER) do
+  		LOCATIONS_START_END(contatore+i,1) := LOCATIONS_END(contatore+i,1)
+  		LOCATIONS_START_END(contatore+i,2) := LOCATIONS_END(contatore+i,2)
+  		LOCATIONS_START_END(contatore+i,3) := LOCATIONS_END(contatore+i,3)
+  	end-do
+  	writeln(LOCATIONS_START_END)
 
   	forall(i in CUSTOMERS_NUMBER) do		
 		CUSTOMERS(i,1) := integer(round((point_max_range*random)))
@@ -97,7 +117,7 @@ model "Location Routing"
 
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
-			if (i<=locations_number and j<=locations_number) then
+			if (i<=locations_number*2 and j<=locations_number*2) then
 				DISTANCE(i,j) := 0.0
 			else
 				DISTANCE(i,j) := sqrt((POINTS(j,1)-POINTS(i,1))^2 + (POINTS(j,2)-POINTS(i,2))^2)
@@ -109,14 +129,20 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 	
-	forall(j in LOCATIONS_NUMBER)
-		sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) * customer_depot(i,j) <= depots_capacity * build_depot(j)
+	!forall(j in LOCATIONS_NUMBER)
+	!	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) * customer_depot(i,j) <= depots_capacity * build_depot(j)
 	
 	forall(i in POINTS_NUMBER)
 		sum(j in POINTS_NUMBER | i=j) edge_exists(i,j) = 0
 	
+	forall(j in POINTS_NUMBER)
+		sum(i in POINTS_NUMBER | i<>j) edge_exists(i,j) = 1
+	
 	forall(i in POINTS_NUMBER)
-		sum(j in POINTS_NUMBER) edge_exists(i,j) = 2
+		sum(j in POINTS_NUMBER | i<>j) edge_exists(i,j) = 1
+		
+	forall(i in locations_number+1..locations_number*2)
+		sum(j in 1..locations_number | i<>j) edge_exists(i,j) = 1
 
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
@@ -156,6 +182,7 @@ model "Location Routing"
 		locations_plot := IVEaddplot("Locations", IVE_RED)
 		forall(i in LOCATIONS_NUMBER) IVEdrawpoint(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2));
 		forall(i in LOCATIONS_NUMBER) IVEdrawlabel(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2), strfmt(LOCATIONS(i,3),2));
+		!forall(i in LOCATIONS_NUMBER) IVEdrawlabel(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2), strfmt(i,2));
 	end-procedure
 
 	procedure draw_customers
@@ -163,6 +190,7 @@ model "Location Routing"
 		customers_plot := IVEaddplot("Customers", IVE_BLACK)
 		forall(i in CUSTOMERS_NUMBER) IVEdrawpoint(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2));
 		forall(i in CUSTOMERS_NUMBER) IVEdrawlabel(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
+		!forall(i in CUSTOMERS_NUMBER) IVEdrawlabel(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(i,2));
 	end-procedure
 	
 	procedure draw_edges
