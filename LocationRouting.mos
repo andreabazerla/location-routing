@@ -176,8 +176,8 @@ model "Location Routing"
 		build_depot(i+locations_number) = build_depot(i)
 		
 	! Ogni coppia di nodi � connessa da un solo arco (non funziona)
-	!forall(i in POINTS_NUMBER)
-	!	sum(j in POINTS_NUMBER) (edge_exists(i,j) + edge_exists(j,i)) = 2
+	forall(i,j in POINTS_NUMBER)
+		(edge_exists(i,j) + edge_exists(j,i)) <= 1
 	
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
@@ -197,8 +197,8 @@ model "Location Routing"
 	
 	iter := 0
 	n_nodi := customers_number + sum(i in 1..locations_number*2) getsol(build_depot(i))
-	while(Connessi < n_nodi and iter < 50) do		
-		! VIncolo del cutset
+	while(Connessi < n_nodi) do		
+		! Vincolo del cutset
 		sum(i,j in POINTS_NUMBER | exists(edge_exists(i,j)) and (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2
 		
 		iter := iter + 1
