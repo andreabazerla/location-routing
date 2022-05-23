@@ -326,11 +326,16 @@ model "Location Routing"
 	
 	procedure draw_edges
 		IVEzoom(0,0,point_max_range,point_max_range)
-		edges_plot := IVEaddplot("Edges", IVE_BLACK)
+		edges_plot1 := IVEaddplot("Edges", IVE_BLUE)
+		edges_plot2 := IVEaddplot("Jumps", IVE_GREEN)
 		forall(i in POINTS_NUMBER) do
 			forall(j in POINTS_NUMBER) do
-				if(getsol(edge_exists(i,j))=1) then
-					IVEdrawline(edges_plot, POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
+				if (getsol(edge_exists(i,j))=1) then
+					if (i<=locations_number and (j>locations_number and j<=locations_number*2)) then
+						IVEdrawarrow(edges_plot2, POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
+					else
+						IVEdrawarrow(edges_plot1, POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));		
+					end-if
 				end-if
 			end-do
 		end-do
