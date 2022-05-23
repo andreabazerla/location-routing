@@ -3,7 +3,7 @@ model "Location Routing"
 
   	version 1.0.0
 
-  	setparam("XPRS_VERBOSE", true)
+  	setparam("XPRS_VERBOSE", false)
 
 	forward function Connessi:integer
 	forward procedure azzera_visto
@@ -47,18 +47,24 @@ model "Location Routing"
 		POINTS: array(POINTS_NUMBER) of array(1..3) of integer
 		visto: array(POINTS_NUMBER) of integer
 
-		build_depot: array(1..locations_number*2) of mpvar
+		build_depot: dynamic array(1..locations_number*2) of mpvar
 
-		DISTANCES: array(POINTS_NUMBER, POINTS_NUMBER) of real
-		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
+		DISTANCES: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of real
+		edge_exists: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 		
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_NUMBER) of mpvar
 
 		Objective: linctr
   	end-declarations
 
-	forall(i in 1..locations_number*2) build_depot(i) is_binary
-	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) edge_exists(i,j) is_binary
+	forall(i in 1..locations_number*2)  do
+		create(build_depot(i))
+		build_depot(i) is_binary
+	end-do
+	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do
+		create(edge_exists(i,j))
+		edge_exists(i,j) is_binary
+	end-do
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER) customer_depot(i,j) is_binary
 
 !INITIALIZATION OF ARRAYS-----------------------------------------------------
@@ -140,7 +146,7 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 	
-	! Vincolo di capacità
+	! Vincolo di capacitï¿½
 	forall(j in LOCATIONS_NUMBER)
 		sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) * customer_depot(i,j) <= depots_capacity * build_depot(j)
 	
@@ -165,13 +171,13 @@ model "Location Routing"
 	forall(j in locations_number+1..locations_number*2)
 		sum(i in 1..customers_number) edge_exists(i,j) = build_depot(j)
 	
-	! Se è un magazzino di start è aperto allora lo è anche il suo end
+	! Se ï¿½ un magazzino di start ï¿½ aperto allora lo ï¿½ anche il suo end
 	forall(i in LOCATIONS_NUMBER)
 		build_depot(i+locations_number) = build_depot(i)
 		
-	! Ogni coppia di nodi è connessa da un solo arco (non funziona)
-	!forall(i in POINTS_NUMBER)
-	!	sum(j in POINTS_NUMBER) (edge_exists(i,j) + edge_exists(j,i)) <= 1
+	! Ogni coppia di nodi ï¿½ connessa da un solo arco (non funziona)
+	forall(i in POINTS_NUMBER)
+		sum(j in POINTS_NUMBER) (edge_exists(i,j) + edge_exists(j,i)) = 2
 	
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
@@ -191,8 +197,8 @@ model "Location Routing"
 	
 	iter := 0
 	n_nodi := customers_number + sum(i in 1..locations_number*2) getsol(build_depot(i))
-	while(Connessi < n_nodi and iter < 50) do
-		n_nodi_sottociclo := Connessi
+	while(Connessi < n_nodi and iter < 10) do
+		!n_nodi_sottociclo := Connessi
 		
 		! VIncolo del cutset
 		sum(i,j in POINTS_NUMBER | exists(edge_exists(i,j)) and (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2
@@ -200,6 +206,16 @@ model "Location Routing"
 		iter := iter + 1
 		minimize(Objective)
 		writeln("\nObjective = ", getobjval, "\n")
+		
+		writeln("\n")
+	
+		forall(i in POINTS_NUMBER) do
+			forall(j in POINTS_NUMBER) do
+				write(getsol(edge_exists(i,j)))
+				write(' ')
+			end-do
+			writeln('')
+		end-do
 		
 		azzera_visto
 		
