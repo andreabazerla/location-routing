@@ -52,7 +52,7 @@ model "Location Routing"
 		DISTANCES: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of real
 		edge_exists: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 		
-		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_NUMBER) of mpvar
+		customer_depot: array(CUSTOMERS_NUMBER, 1..locations_number*2) of mpvar
 
 		Objective: linctr
   	end-declarations
@@ -65,7 +65,7 @@ model "Location Routing"
 		create(edge_exists(i,j))
 		edge_exists(i,j) is_binary
 	end-do
-	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER) customer_depot(i,j) is_binary
+	forall(i in CUSTOMERS_NUMBER, j in  1..locations_number*2) customer_depot(i,j) is_binary
 
 !INITIALIZATION OF ARRAYS-----------------------------------------------------
 
@@ -165,7 +165,7 @@ model "Location Routing"
 	
 	! Dopo ogni magazzino start aperto ci deve essere un cliente	
 	forall(i in LOCATIONS_NUMBER)
-		sum(j in locations_number*2..points_number) edge_exists(i,j) = build_depot(i)
+		sum(j in locations_number*2+1..points_number) edge_exists(i,j) = build_depot(i)
 		
 	! Ogni magazzino end se costruito viene raggiunto solo da un cliente
 	forall(j in locations_number+1..locations_number*2)
@@ -178,6 +178,33 @@ model "Location Routing"
 	! Ogni coppia di nodi ï¿½ connessa da un solo arco (non funziona)
 	forall(i,j in POINTS_NUMBER)
 		(edge_exists(i,j) + edge_exists(j,i)) <= 1
+		
+		
+	! -- nuovi vincoli --
+	! dopo un cliente non deve esserci un magazzino start
+	forall(i in locations_number*2+1..points_number) 
+		sum(j in 1..locations_number) edge_exists(i,j) = 0
+		
+	! dopo un magazzino start non deve esserci un magazzino end
+	forall(i in 1..locations_number) 
+		sum(j in locations_number+1..locations_number*2) edge_exists(i,j) = 0
+	
+	! dopo un magazzino end non può esserci un cliente
+	forall(i in locations_number+1..locations_number*2) 
+		sum(j in locations_number*2+1..points_number) edge_exists(i,j) = 0
+		
+	!ogni cliente appartiene ad un solo magazzino -- mag entrata e mag uscita devono coincidere nel cliente
+	!  -> non va!!
+	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
+		customer_depot(i, j+locations_number) = customer_depot(i,j)
+		
+	!cliente può andare a end o cliente
+	!forall(i in lo
+		
+		
+	
+		
+	
 	
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
