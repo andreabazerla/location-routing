@@ -176,8 +176,8 @@ model "Location Routing"
 		build_depot(i+locations_number) = build_depot(i)
 		
 	! Ogni coppia di nodi � connessa da un solo arco (non funziona)
-	forall(i in POINTS_NUMBER)
-		sum(j in POINTS_NUMBER) (edge_exists(i,j) + edge_exists(j,i)) = 2
+	!forall(i in POINTS_NUMBER)
+	!	sum(j in POINTS_NUMBER) (edge_exists(i,j) + edge_exists(j,i)) = 2
 	
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
@@ -197,17 +197,20 @@ model "Location Routing"
 	
 	iter := 0
 	n_nodi := customers_number + sum(i in 1..locations_number*2) getsol(build_depot(i))
-	while(Connessi < n_nodi and iter < 10) do
-		!n_nodi_sottociclo := Connessi
-		
+	while(Connessi < n_nodi and iter < 50) do		
 		! VIncolo del cutset
 		sum(i,j in POINTS_NUMBER | exists(edge_exists(i,j)) and (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2
 		
 		iter := iter + 1
 		minimize(Objective)
 		writeln("\nObjective = ", getobjval, "\n")
-		
-		writeln("\n")
+				
+		forall(i in 1..locations_number*2) do
+			write(getsol(build_depot(i)))
+			write(' ')
+		end-do
+	
+		write("\n\n")
 	
 		forall(i in POINTS_NUMBER) do
 			forall(j in POINTS_NUMBER) do
@@ -231,6 +234,8 @@ model "Location Routing"
 
   	!minimize(XPRS_LIN, Objective)
   	!writeln("\nObjective linear = ", getobjval, "\n")
+
+	write("\n")
 
 	forall(i in 1..locations_number*2) do
 		write(getsol(build_depot(i)))
@@ -268,9 +273,7 @@ model "Location Routing"
 	procedure visita(n:integer)
 		if(visto(n)<>1) then
 			visto(n) := 1
-			forall(m in POINTS_NUMBER | n<m and (getsol(edge_exists(n,m))<>0))
-				visita(m)
-			forall(m in POINTS_NUMBER | n>m and (getsol(edge_exists(m,n))<>0))
+			forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(n,m))<>0))
 				visita(m)
 		end-if
 	end-procedure
