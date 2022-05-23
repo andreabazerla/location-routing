@@ -230,21 +230,21 @@ model "Location Routing"
 
 		iter := iter + 1
 		minimize(Objective)
-		writeln("\nObjective = ", getobjval, "\n")
+		writeln("\nObjective = ", getobjval)
 
+		writeln("\nbuild_depot(i)")
 		forall(i in 1..locations_number*2) do
 			write(getsol(build_depot(i)))
 			write(' ')
 		end-do
 
-		write("\n\n")
-
+		writeln("\n\nedge_exists(i,j)")
 		forall(i in POINTS_NUMBER) do
 			forall(j in POINTS_NUMBER) do
 				write(getsol(edge_exists(i,j)))
-				write(' ')
+				write(" ")
 			end-do
-			writeln('')
+			writeln("")
 		end-do
 
 		azzera_visto
@@ -262,21 +262,44 @@ model "Location Routing"
   	!minimize(XPRS_LIN, Objective)
   	!writeln("\nObjective linear = ", getobjval, "\n")
 
-	write("\n")
-
+	! Magazzini
+	writeln("\nbuild_depot(i)")
 	forall(i in 1..locations_number*2) do
 		write(getsol(build_depot(i)))
 		write(' ')
 	end-do
 
-	writeln("\n")
-
+	! Archi
+	writeln("\n\nedge_exists(i,j)")
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
 			write(getsol(edge_exists(i,j)))
 			write(' ')
 		end-do
 		writeln('')
+	end-do
+
+	! Matrice di incidenza
+	writeln("\nIncidence matrix")
+	forall(i in POINTS_NUMBER) do
+		forall(j in POINTS_NUMBER) do
+			forall(k in POINTS_NUMBER) do
+				if (getsol(edge_exists(j,k))=1) then
+					jj := j
+					kk := k
+					!break
+				end-if
+			end-do
+			if (i=jj) then
+				write(strfmt("-1",2))
+			elif (i=kk) then
+				write(strfmt("+1",2))
+			else
+				write(strfmt("0", 2))
+			end-if
+			write(" ")
+		end-do
+		writeln("")
 	end-do
 
 	svgerase
@@ -318,48 +341,50 @@ model "Location Routing"
 	end-procedure
 
 	procedure draw_locations
-		svgaddgroup("locations", "Locations", SVG_RED)
+		svgaddgroup("locations_points", "Locations Points")
+		svgaddgroup("locations_index", "Locations Index")
 		forall(i in LOCATIONS_NUMBER) do
-			svgaddpoint("locations", LOCATIONS(i,1), LOCATIONS(i,2));
-			svgsetstyle("locations", SVG_OPACITY, 0.5)
+			svgaddpoint("locations_points", LOCATIONS(i,1), LOCATIONS(i,2));
+			svgsetstyle("locations_points", SVG_COLOR, SVG_RED)
 		end-do
 		forall(i in LOCATIONS_NUMBER) do
-			svgaddtext("locations", LOCATIONS(i,1), LOCATIONS(i,2), strfmt(LOCATIONS(i,3),2));
-			svgsetstyle("locations", SVG_FONTSIZE, "2pt")
+			multiple_index := strfmt(i,1) + "-" + strfmt(i+locations_number,1)
+			svgaddtext("locations_index", LOCATIONS(i,1), LOCATIONS(i,2), strfmt(multiple_index,2));
+			svgsetstyle("locations_index", SVG_FONTSIZE, "3pt")
+			svgsetstyle("locations_index", SVG_FONTWEIGHT, "bold")
+			svgsetstyle("locations_index", SVG_COLOR, SVG_ORANGE)
 		end-do
-		!forall(i in LOCATIONS_NUMBER) IVEdrawlabel(locations_plot, LOCATIONS(i,1), LOCATIONS(i,2), strfmt(i,2));
 	end-procedure
 
 	procedure draw_customers
-		svgaddgroup("customers", "Customers", SVG_BLACK)
+		svgaddgroup("customers_points", "Customers Points")
+		svgaddgroup("customers_index", "Customers Index")
 		forall(i in CUSTOMERS_NUMBER) do
-			svgaddpoint("customers", CUSTOMERS(i,1), CUSTOMERS(i,2));
-			svgsetstyle("customers", SVG_OPACITY, 0.5)
+			svgaddpoint("customers_points", CUSTOMERS(i,1), CUSTOMERS(i,2));
+			svgsetstyle("customers_points", SVG_COLOR, SVG_YELLOW)
 		end-do
 		forall(i in CUSTOMERS_NUMBER) do
-			svgaddtext("customers", CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
-			svgsetstyle("customers", SVG_FONTSIZE, "2pt")
+			svgaddtext("customers_index", CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(i+locations_number*2,2));
+			svgsetstyle("customers_index", SVG_FONTSIZE, "3pt")
+			svgsetstyle("customers_index", SVG_FONTWEIGHT, "bold")
+			svgsetstyle("customers_index", SVG_COLOR, SVG_ORANGE)
 		end-do
-		!forall(i in CUSTOMERS_NUMBER) svgaddpoint(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(i,2));
 	end-procedure
 
 	procedure draw_edges
-		svgaddgroup("edges_customers", "Edges Customers", SVG_BLUE)
-		svgaddgroup("edges_depots", "Edges Depots", SVG_GREEN)
-		forall(i in POINTS_NUMBER) do
-			forall(j in POINTS_NUMBER) do
-				if (getsol(edge_exists(i,j))=1) then
-					if (i<=locations_number and (j>locations_number and j<=locations_number*2)) then
-						svgaddarrow("edges_depots", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
-						svgsetstyle("edges_depots", SVG_STROKEWIDTH, 1)
-					else
-						svgaddarrow("edges_customers", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
-						svgsetstyle("edges_customers", SVG_STROKEWIDTH, "0.02rem")
-					end-if
+		svgaddgroup("edges_customers", "Edges Customers", SVG_BLACK)
+		svgaddgroup("edges_depots", "Edges Depots", SVG_RED)
+		forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do
+			if (getsol(edge_exists(i,j))=1) then
+				if (i<=locations_number and j>locations_number and j<=(locations_number*2)) then
+					svgaddarrow("edges_depots", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
+					svgsetstyle("edges_depots", SVG_STROKEWIDTH, "0.02rem")
+				else
+					svgaddarrow("edges_customers", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
+					svgsetstyle("edges_customers", SVG_STROKEWIDTH, "0.02rem")
 				end-if
-			end-do
+			end-if
 		end-do
-		!forall(i in CUSTOMERS_NUMBER) IVEdrawlabel(customers_plot, CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
 	end-procedure
 
 end-model
