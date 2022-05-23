@@ -275,6 +275,8 @@ model "Location Routing"
 			visto(n) := 1
 			forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(n,m))<>0))
 				visita(m)
+			forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(m,n))<>0))
+				visita(m)
 		end-if
 	end-procedure
 	
