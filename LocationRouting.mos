@@ -22,13 +22,13 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 5
+    locations_number := 10
   	customers_number := 10
 
 	! Punti considerati come di inizio e di fine
   	points_number := locations_number*2 + customers_number
 
-  	depots_capacity := 20
+  	depots_capacity := 15
   	customer_max_demand := 10
   	depot_max_cost := 5
   	point_max_range := 100
@@ -43,7 +43,7 @@ model "Location Routing"
   	CUSTOMERS_POINT := 2*locations_number+1..points_number
 
   	declarations
-		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..3) of integer
+		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..4) of integer
 		LOCATIONS_START: array(LOCATIONS_NUMBER) of array(1..3) of integer
 		LOCATIONS_END: array(locations_number+1..locations_number*2) of array(1..3) of integer
 		LOCATIONS_START_END: array(1..locations_number*2) of array(1..3) of integer
@@ -58,7 +58,7 @@ model "Location Routing"
 		DISTANCES: array(POINTS_NUMBER, POINTS_NUMBER) of real
 		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 
-		customer_depot: array(CUSTOMERS_NUMBER, 1..locations_number*2) of mpvar
+		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_POINT) of mpvar
 
 		Objective: linctr
   	end-declarations
@@ -69,7 +69,7 @@ model "Location Routing"
 	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do
 		edge_exists(i,j) is_binary
 	end-do
-	forall(i in CUSTOMERS_NUMBER, j in 1..locations_number*2) customer_depot(i,j) is_binary
+	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_POINT) customer_depot(i,j) is_binary
 
 !INITIALIZATION OF ARRAYS-----------------------------------------------------
 
@@ -78,6 +78,7 @@ model "Location Routing"
 		LOCATIONS(i,1) := integer(round((point_max_range*random)))
 		LOCATIONS(i,2) := integer(round((point_max_range*random)))
 		LOCATIONS(i,3) := integer(round((depot_max_cost*random)+0.5))
+		LOCATIONS(i,4) := depots_capacity
 	end-do
 
 	forall(i in LOCATIONS_NUMBER) do
@@ -114,6 +115,7 @@ model "Location Routing"
 		CUSTOMERS(i,2) := integer(round((point_max_range*random)))
 		CUSTOMERS(i,3) := integer(round((customer_max_demand*random)+0.5))
   	end-do
+  	writeln("CUSTOMERS: ")
   	writeln(CUSTOMERS)
 
 	contatore := 0
@@ -150,14 +152,21 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
-	! Vincolo di capacit�
-	forall(j in LOCATIONS_NUMBER)
-		sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) * customer_depot(i,j) <= depots_capacity * build_depot(j)
+	!Ogni cliente appartiene a un solo magazzino
+	forall(i in CUSTOMERS_NUMBER)
+		sum(j in LOCATIONS_START_POINT) customer_depot(i,j) = 1
+
+	! Vincolo di capacita'
+	forall(j in LOCATIONS_START_POINT)
+		sum(i in CUSTOMERS_NUMBER) (CUSTOMERS(i,3) * customer_depot(i,j)) <= depots_capacity
+
+	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_POINT)
+		customer_depot(i,j) <= build_depot(j)
 
 	! No archi su loro stessi
 	sum(i in POINTS_NUMBER, j in POINTS_NUMBER | i=j) edge_exists(i,j) = 0
 
-	! Uno ed uno solo arco entrante ed uscente
+	! Per ogni nodo si ha uno ed uno solo arco entrante ed uscente
 	forall(i in POINTS_NUMBER) do
 		sum(j in POINTS_NUMBER) edge_exists(i,j) = 1
 		sum(j in POINTS_NUMBER) edge_exists(j,i) = 1
@@ -170,10 +179,6 @@ model "Location Routing"
 	! Dopo ogni magazzino start aperto ci deve essere un cliente
 	forall(i in LOCATIONS_START_POINT)
 		sum(j in CUSTOMERS_POINT) edge_exists(i,j) = build_depot(i)
-
-	!Se magazzino start è chiuso, deve esistere arco verso il proprio magazzino end
-	!forall(i in LOCATIONS_START_POINT)
-	!	sum(j in LOCATIONS_END_POINT | i+locations_number = j) edge_exists(i,j) = build_depot(i)+1
 
 	! Ogni magazzino end se costruito viene raggiunto solo da un cliente
 	forall(j in LOCATIONS_END_POINT)
@@ -248,7 +253,14 @@ model "Location Routing"
 	while(Connessi < n_nodi) do !eliminate le iterazioni (and iter < 10)
 		! Vincolo del cutset
 		!CardSottoCiclo:= Connessi
-		sum(i,j in POINTS_NUMBER | (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2 !vincolo di CutSet
+
+		forall(k in LOCATIONS_NUMBER) do
+			if(LOCATIONS(k,4) >= 0) then
+				sum(i,j in POINTS_NUMBER | (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2 !vincolo di CutSet
+			end-if
+		end-do
+		!è necessario associare ad ogni TSP parziale del magazzino la domanda dei clienti
+
 
 		iter := iter + 1
 		minimize(Objective)
@@ -344,8 +356,13 @@ model "Location Routing"
 	procedure visita(n:integer)
 		if(visto(n)<>1) then !se il nodo dove siamo posizionati non è stato visto
 			visto(n) := 1 !allora lo pongo come visto
-			forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(n,m))<>0)) !mi sposto al nodo successivo collegato dall'arco orientato
+			forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(n,m))<>0)) do !mi sposto al nodo successivo collegato dall'arco orientato
 				visita(m) !visito il nodo in cui mi sono spostato
+				if(m > locations_number*2) then !se m è un cliente
+					forall(i in LOCATIONS_START_POINT | getsol(customer_depot(m-(locations_number*2),i))=1) !se m appartiene al magazzino i
+						LOCATIONS(i,4) -= CUSTOMERS(m-(locations_number*2),3) !allora calo la capacità residua del magazzino
+				end-if
+			end-do
 			!forall(m in POINTS_NUMBER | n<>m and (getsol(edge_exists(m,n))<>0))
 			!	visita(m)
 		end-if
@@ -359,8 +376,8 @@ model "Location Routing"
 			svgsetstyle("locations_points", SVG_COLOR, SVG_RED)
 		end-do
 		forall(i in LOCATIONS_NUMBER) do
-			multiple_index := strfmt(i,1) + "-" + strfmt(i+locations_number,1)
-			svgaddtext("locations_index", LOCATIONS(i,1), LOCATIONS(i,2), strfmt(multiple_index,2));
+		!	multiple_index := strfmt(i,1) + "-" + strfmt(i+locations_number,1)
+			svgaddtext("locations_index", LOCATIONS(i,1), LOCATIONS(i,2), strfmt(LOCATIONS(i,3),2));
 			svgsetstyle("locations_index", SVG_FONTSIZE, "3pt")
 			svgsetstyle("locations_index", SVG_FONTWEIGHT, "bold")
 			svgsetstyle("locations_index", SVG_COLOR, SVG_ORANGE)
@@ -375,7 +392,7 @@ model "Location Routing"
 			svgsetstyle("customers_points", SVG_COLOR, SVG_YELLOW)
 		end-do
 		forall(i in CUSTOMERS_NUMBER) do
-			svgaddtext("customers_index", CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(i+locations_number*2,2));
+			svgaddtext("customers_index", CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
 			svgsetstyle("customers_index", SVG_FONTSIZE, "3pt")
 			svgsetstyle("customers_index", SVG_FONTWEIGHT, "bold")
 			svgsetstyle("customers_index", SVG_COLOR, SVG_ORANGE)
