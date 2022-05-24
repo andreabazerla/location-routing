@@ -13,6 +13,8 @@ model "Location Routing"
   	forward procedure draw_customers
   	forward procedure draw_edges
 
+  	forward procedure plot(saved:boolean)
+
   	declarations
     	locations_number: integer
     	customers_number: integer
@@ -188,6 +190,10 @@ model "Location Routing"
 	! dopo un magazzino start non deve esserci un magazzino end
 	forall(i in 1..locations_number)
 		sum(j in locations_number+1..locations_number*2) edge_exists(i,j) = 0
+		
+	! dopo un magazzino start non deve esserci un magazzino start
+	forall(i in 1..locations_number)
+		sum(j in 1..locations_number) edge_exists(i,j) = 0
 
 	! dopo un magazzino end non pu� esserci un cliente
 	forall(i in locations_number+1..locations_number*2)
@@ -257,6 +263,8 @@ model "Location Routing"
 		end-do
 
 		n_nodi := customers_number + sum(i in 1..locations_number*2) getsol(build_depot(i))
+
+		plot(false)
 	end-do
 
   	!minimize(XPRS_LIN, Objective)
@@ -302,20 +310,7 @@ model "Location Routing"
 		writeln("")
 	end-do
 
-	svgerase
-
-  	draw_locations
-  	draw_customers
-  	draw_edges
-
-  	svgsetgraphviewbox(-10, -10, point_max_range+20, point_max_range+20)
-
-  	svgsetgraphlabels("x", "y")
-
-  	svgsave("graph.svg")
-
-  	svgrefresh
-  	svgwaitclose
+	plot(true)
 
 !FUNZIONI---------------------------------------------------------------------
 
@@ -385,6 +380,28 @@ model "Location Routing"
 				end-if
 			end-if
 		end-do
+	end-procedure
+
+	procedure plot(saved:boolean)
+		svgerase
+
+	  	draw_locations
+	  	draw_customers
+	  	draw_edges
+
+	  	svgsetgraphviewbox(-10, -10, point_max_range+20, point_max_range+20)
+
+	  	svgsetgraphlabels("x", "y")
+
+		if(saved) then
+	  		svgsave("graph.svg")
+	  		svgrefresh
+	  		! svgwaitclose
+	  	else
+	  		svgrefresh
+	  		svgpause
+	  	end-if
+
 	end-procedure
 
 end-model
