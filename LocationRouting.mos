@@ -22,15 +22,15 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 3
+    locations_number := 5
   	customers_number := 10
 
 	! Punti considerati come di inizio e di fine
   	points_number := locations_number*2 + customers_number
 
-  	depots_capacity := 15
+  	depots_capacity := 20
   	customer_max_demand := 10
-  	depot_max_cost := 10
+  	depot_max_cost := 5
   	point_max_range := 100
 
   	LOCATIONS_NUMBER := 1..locations_number
@@ -53,10 +53,10 @@ model "Location Routing"
 		POINTS: array(POINTS_NUMBER) of array(1..3) of integer
 		visto: array(POINTS_NUMBER) of integer
 
-		build_depot: dynamic array(1..locations_number*2) of mpvar
+		build_depot: array(1..locations_number*2) of mpvar
 
-		DISTANCES: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of real
-		edge_exists: dynamic array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
+		DISTANCES: array(POINTS_NUMBER, POINTS_NUMBER) of real
+		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 
 		customer_depot: array(CUSTOMERS_NUMBER, 1..locations_number*2) of mpvar
 
@@ -64,11 +64,9 @@ model "Location Routing"
   	end-declarations
 
 	forall(i in 1..locations_number*2)  do
-		create(build_depot(i))
 		build_depot(i) is_binary
 	end-do
 	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do
-		create(edge_exists(i,j))
 		edge_exists(i,j) is_binary
 	end-do
 	forall(i in CUSTOMERS_NUMBER, j in 1..locations_number*2) customer_depot(i,j) is_binary
@@ -173,7 +171,7 @@ model "Location Routing"
 	forall(i in LOCATIONS_START_POINT)
 		sum(j in CUSTOMERS_POINT) edge_exists(i,j) = build_depot(i)
 
-	!Se magazzino start è chiuso, deve esistere arco verso magazzino end
+	!Se magazzino start è chiuso, deve esistere arco verso il proprio magazzino end
 	!forall(i in LOCATIONS_START_POINT)
 	!	sum(j in LOCATIONS_END_POINT | i+locations_number = j) edge_exists(i,j) = build_depot(i)+1
 
@@ -199,11 +197,11 @@ model "Location Routing"
 	!forall(i in LOCATIONS_START_POINT)
 	!	sum(j in LOCATIONS_END_POINT) edge_exists(i,j) = 0
 
-	! dopo un magazzino end non deve esserci un magazzino end
+	! dopo un magazzino end non deve esserci un magazzino end se il magazzino non è costruito
 	!forall(i in LOCATIONS_END_POINT)
 	!	sum(j in LOCATIONS_END_POINT) edge_exists(i,j) = 0
 
-	! dopo un magazzino start non deve esserci un magazzino start
+	! dopo un magazzino start non deve esserci un magazzino start se il magazzino non è
 	!forall(i in LOCATIONS_START_POINT)
 	!	sum(j in LOCATIONS_START_POINT) edge_exists(i,j) = 0
 
@@ -219,9 +217,10 @@ model "Location Routing"
 	!cliente pu� andare a end o cliente
 	!forall(i in lo
 
-	!almeno un magazzino deve essere aperto
-	!sum(i in LOCATIONS_NUMBER) build_depot(i) >=1
-
+	!almeno un magazzino deve essere aperto se ci sono clienti
+	if(customers_number>0) then
+		sum(i in LOCATIONS_NUMBER) build_depot(i) >=1
+	end-if
 
 
 
@@ -249,7 +248,7 @@ model "Location Routing"
 	while(Connessi < n_nodi) do !eliminate le iterazioni (and iter < 10)
 		! Vincolo del cutset
 		!CardSottoCiclo:= Connessi
-		sum(i,j in POINTS_NUMBER | exists(edge_exists(i,j)) and (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2
+		sum(i,j in POINTS_NUMBER | (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2 !vincolo di CutSet
 
 		iter := iter + 1
 		minimize(Objective)
@@ -385,15 +384,18 @@ model "Location Routing"
 
 	procedure draw_edges
 		svgaddgroup("edges_customers", "Edges Customers", SVG_BLACK)
-		!svgaddgroup("edges_depots", "Edges Depots", SVG_RED)
+		svgaddgroup("edges_depots", "Edges Depots", SVG_LIME)
 		forall(i in POINTS_NUMBER, j in POINTS_NUMBER) do
 			if (getsol(edge_exists(i,j))=1) then
+				!gli archi verdi sono quelli tra magazzino E e mag S, quelli tra mag S e S, quelli tra E e E e quelli tra E e S
 				!if (not(j<=locations_number and i>locations_number and i<=(locations_number*2))) then
+				if(j<=(locations_number*2) and i<=(locations_number*2)) then
+					svgaddarrow("edges_depots", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
+					svgsetstyle("edges_depots", SVG_STROKEWIDTH, "0.02rem")
+				else
 					svgaddarrow("edges_customers", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2)); !da magazzino a cliente e da cliente a magazzino
 					svgsetstyle("edges_customers", SVG_STROKEWIDTH, "0.02rem")
-					!svgaddarrow("edges_depots", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
-					!svgsetstyle("edges_depots", SVG_STROKEWIDTH, "0.02rem")
-				!end-if
+				end-if
 			end-if
 		end-do
 	end-procedure
