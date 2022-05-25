@@ -23,7 +23,7 @@ model "Location Routing"
     end-declarations
 
     locations_number := 10
-  	customers_number := 10
+  	customers_number := 15
 
 	! Punti considerati come di inizio e di fine
   	points_number := locations_number*2 + customers_number
@@ -93,9 +93,17 @@ model "Location Routing"
 		LOCATIONS_END(contatore+i,3) := LOCATIONS(i,3)
 	end-do
 
-  	writeln(LOCATIONS)
-  	writeln(LOCATIONS_START)
-  	writeln(LOCATIONS_END)
+  	write("\nLOCATIONS_START: [")
+  	forall(i in LOCATIONS_START_POINT) do
+  		write("[",LOCATIONS_START(i,1)," ",LOCATIONS_START(i,2)," ", LOCATIONS_START(i,3),"] ")
+  	end-do
+  	write("]")
+
+  	write("\nLOCATIONS_END: [")
+  	forall(i in locations_number+1..locations_number*2) do
+  		write("[",LOCATIONS_END(i,1)," ",LOCATIONS_END(i,2)," ", LOCATIONS_END(i,3),"] ")
+  	end-do
+  	write("]")
 
   	forall(i in LOCATIONS_NUMBER) do
   		LOCATIONS_START_END(i,1) := LOCATIONS_START(i,1)
@@ -108,15 +116,18 @@ model "Location Routing"
   		LOCATIONS_START_END(contatore+i,2) := LOCATIONS_END(contatore+i,2)
   		LOCATIONS_START_END(contatore+i,3) := LOCATIONS_END(contatore+i,3)
   	end-do
-  	writeln(LOCATIONS_START_END)
 
   	forall(i in CUSTOMERS_NUMBER) do
 		CUSTOMERS(i,1) := integer(round((point_max_range*random)))
 		CUSTOMERS(i,2) := integer(round((point_max_range*random)))
 		CUSTOMERS(i,3) := integer(round((customer_max_demand*random)+0.5))
   	end-do
-  	writeln("CUSTOMERS: ")
-  	writeln(CUSTOMERS)
+
+ 	write("\nCUSTOMERS: [")
+  	forall(i in CUSTOMERS_NUMBER) do
+  		write("[",CUSTOMERS(i,1)," ",CUSTOMERS(i,2)," ", CUSTOMERS(i,3),"] ")
+  	end-do
+  	write("]")
 
 	contatore := 0
 	forall(i in LOCATIONS_NUMBER) do
@@ -136,8 +147,14 @@ model "Location Routing"
 		POINTS(contatore+i,2) := CUSTOMERS(i,2)
 		POINTS(contatore+i,3) := CUSTOMERS(i,3)
 	end-do
-	writeln(POINTS)
 
+ 	write("\nPOINTS: [")
+  	forall(i in POINTS_NUMBER) do
+  		write("[",POINTS(i,1)," ",POINTS(i,2)," ", POINTS(i,3),"] ")
+  	end-do
+  	writeln("]")
+
+  	writeln('')
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
 			if (i<=locations_number*2 and j<=locations_number*2) then
@@ -192,7 +209,6 @@ model "Location Routing"
 	forall(i,j in POINTS_NUMBER)
 		(edge_exists(i,j) + edge_exists(j,i)) <= 1
 
-
 	! -- nuovi vincoli --
 	! dopo un cliente non deve esserci un magazzino start
 	forall(i in CUSTOMERS_POINT)
@@ -219,15 +235,18 @@ model "Location Routing"
 	!forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
 	!	customer_depot(i, j+locations_number) = customer_depot(i,j)
 
-	!cliente pu� andare a end o cliente
+	!cliente puo' andare a end o cliente
 	!forall(i in lo
 
 	!almeno un magazzino deve essere aperto se ci sono clienti
-	if(customers_number>0) then
+	if (customers_number>0) then
 		sum(i in LOCATIONS_NUMBER) build_depot(i) >=1
 	end-if
 
-
+	! la somma delle domande di tutti i clienti deve esere minore uguale della capacità dei magazini moltiplicata per il numero di possibili magazzini
+	writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
+	writeln(depots_capacity*locations_number)
+	!sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= depots_capacity*locations_number
 
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
@@ -235,7 +254,9 @@ model "Location Routing"
 
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
+
 	plot(false)
+
 	!azzera visto azzera le visite su tutti i punti
 	azzera_visto
 
@@ -250,7 +271,7 @@ model "Location Routing"
 	iter := 0
 	!n_nodi := customers_number + sum(i in 1..locations_number*2) getsol(build_depot(i))
 	n_nodi := points_number
-	while(Connessi < n_nodi) do !eliminate le iterazioni (and iter < 10)
+	while(Connessi < n_nodi and iter < 100) do !eliminate le iterazioni (and iter < 10)
 		! Vincolo del cutset
 		!CardSottoCiclo:= Connessi
 
@@ -261,13 +282,17 @@ model "Location Routing"
 		end-do
 		!è necessario associare ad ogni TSP parziale del magazzino la domanda dei clienti
 
-
 		iter := iter + 1
 		minimize(Objective)
 		writeln("\nObjective = ", getobjval)
 
 		writeln("\nbuild_depot(i)")
-		forall(i in 1..locations_number*2) do
+		forall(i in 1..locations_number) do
+			write(getsol(build_depot(i)))
+			write(' ')
+		end-do
+		writeln('')
+		forall(i in locations_number+1..locations_number*2) do
 			write(getsol(build_depot(i)))
 			write(' ')
 		end-do
@@ -300,13 +325,35 @@ model "Location Routing"
 
 	! Magazzini
 	writeln("\nbuild_depot(i)")
-	forall(i in 1..locations_number*2) do
+	forall(i in 1..locations_number) do
+		write(getsol(build_depot(i)))
+		write(' ')
+	end-do
+	writeln('')
+	forall(i in locations_number+1..locations_number*2) do
 		write(getsol(build_depot(i)))
 		write(' ')
 	end-do
 
+	! Customers-Depots
+	writeln("\n\ncustomer_depot(i,j)")
+	forall(i in 1..locations_number*2) do
+		forall(j in LOCATIONS_START_POINT) do
+			write('0 ')
+		end-do
+		writeln('')
+	end-do
+	writeln('Next index: ', locations_number*2)
+	forall(i in CUSTOMERS_NUMBER) do
+		forall(j in LOCATIONS_START_POINT) do
+			write(getsol(customer_depot(i,j)))
+			write(' ')
+		end-do
+		writeln('')
+	end-do
+
 	! Archi
-	writeln("\n\nedge_exists(i,j)")
+	writeln("\nedge_exists(i,j)")
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
 			write(getsol(edge_exists(i,j)))
@@ -316,6 +363,7 @@ model "Location Routing"
 	end-do
 
 	! Matrice di incidenza
+	(!
 	writeln("\nIncidence matrix")
 	forall(i in POINTS_NUMBER) do
 		forall(j in POINTS_NUMBER) do
@@ -337,6 +385,7 @@ model "Location Routing"
 		end-do
 		writeln("")
 	end-do
+	!)
 
 	plot(true)
 
@@ -370,32 +419,50 @@ model "Location Routing"
 
 	procedure draw_locations
 		svgaddgroup("locations_points", "Locations Points")
+		svgaddgroup("locations_cost", "Locations Cost")
 		svgaddgroup("locations_index", "Locations Index")
+
 		forall(i in LOCATIONS_NUMBER) do
 			svgaddpoint("locations_points", LOCATIONS(i,1), LOCATIONS(i,2));
 			svgsetstyle("locations_points", SVG_COLOR, SVG_RED)
 		end-do
+
 		forall(i in LOCATIONS_NUMBER) do
-		!	multiple_index := strfmt(i,1) + "-" + strfmt(i+locations_number,1)
-			svgaddtext("locations_index", LOCATIONS(i,1), LOCATIONS(i,2), strfmt(LOCATIONS(i,3),2));
-			svgsetstyle("locations_index", SVG_FONTSIZE, "3pt")
-			svgsetstyle("locations_index", SVG_FONTWEIGHT, "bold")
-			svgsetstyle("locations_index", SVG_COLOR, SVG_ORANGE)
+			svgaddtext("locations_cost", LOCATIONS(i,1)+1, LOCATIONS(i,2)+1, strfmt(LOCATIONS(i,3),2));
+			svgsetstyle("locations_cost", SVG_FONTSIZE, "3pt")
+			svgsetstyle("locations_cost", SVG_FONTWEIGHT, "bold")
+			svgsetstyle("locations_cost", SVG_COLOR, SVG_BLUE)
+		end-do
+
+		forall(i in LOCATIONS_NUMBER) do
+			multiple_index := strfmt(i,1) + "-" + strfmt(i+locations_number,1)
+			svgaddtext("locations_index", LOCATIONS(i,1)+2, LOCATIONS(i,2)-2, strfmt(multiple_index,2));
+			svgsetstyle("locations_index", SVG_FONTSIZE, "2pt")
+			svgsetstyle("locations_index", SVG_COLOR, SVG_MAGENTA)
 		end-do
 	end-procedure
 
 	procedure draw_customers
 		svgaddgroup("customers_points", "Customers Points")
+		svgaddgroup("customers_demand", "Customers Demand")
 		svgaddgroup("customers_index", "Customers Index")
+
 		forall(i in CUSTOMERS_NUMBER) do
 			svgaddpoint("customers_points", CUSTOMERS(i,1), CUSTOMERS(i,2));
 			svgsetstyle("customers_points", SVG_COLOR, SVG_YELLOW)
 		end-do
+
 		forall(i in CUSTOMERS_NUMBER) do
-			svgaddtext("customers_index", CUSTOMERS(i,1), CUSTOMERS(i,2), strfmt(CUSTOMERS(i,3),2));
-			svgsetstyle("customers_index", SVG_FONTSIZE, "3pt")
-			svgsetstyle("customers_index", SVG_FONTWEIGHT, "bold")
-			svgsetstyle("customers_index", SVG_COLOR, SVG_ORANGE)
+			svgaddtext("customers_demand", CUSTOMERS(i,1)+1, CUSTOMERS(i,2)+1, strfmt(CUSTOMERS(i,3),2));
+			svgsetstyle("customers_demand", SVG_FONTSIZE, "3pt")
+			svgsetstyle("customers_demand", SVG_FONTWEIGHT, "bold")
+			svgsetstyle("customers_demand", SVG_COLOR, SVG_BLUE)
+		end-do
+
+		forall(i in CUSTOMERS_NUMBER) do
+			svgaddtext("customers_index", CUSTOMERS(i,1)+2, CUSTOMERS(i,2)-2, strfmt(i+locations_number*2,2));
+			svgsetstyle("customers_index", SVG_FONTSIZE, "2pt")
+			svgsetstyle("customers_index", SVG_COLOR, SVG_MAGENTA)
 		end-do
 	end-procedure
 
@@ -434,7 +501,8 @@ model "Location Routing"
 	  		! svgwaitclose
 	  	else
 	  		svgrefresh
-	  		svgpause
+	  		wait(1)
+	  		!svgpause
 	  	end-if
 
 	end-procedure
