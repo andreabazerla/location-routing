@@ -195,6 +195,8 @@ model "Location Routing"
 	forall(i in LOCATIONS_START_POINT)
 		sum(j in CUSTOMERS_POINT) edge_exists(i,j) = build_depot(i)
 
+
+
 	! Ogni cliente che appartiene ad un magazzino aperto puo' avere un arco che dal magazzino arriva a lui stesso
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
 		edge_exists(j,i+locations_number*2) <= customer_depot(i,j)
@@ -202,6 +204,13 @@ model "Location Routing"
 	! Ogni cliente che appartiene ad un magazzino aperto puo' avere un arco che da lui stesso arriva al magazzino
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
 		edge_exists(i+locations_number*2,j+locations_number) <= customer_depot(i,j)
+		
+	!TO-DO: se due clienti appartengono allo stesso magazzino, allora ci può essere un arco che li collega
+	!ma se due clienti NON appartengono allo stesso magazzino, allora non ci può essere un arco che li collega
+
+	!Ogni cliente che appartiene ad un magazzino aperto può avere un arco proveniente da un altro cliente appartenente al magazzino
+	!forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER, k in CUSTOMERS_NUMBER)
+	!	edge_exists(i+locations_number*2,k+locations_number*2) <= customer_depot(i,j)+customer_depot(k,j)-1
 
 	! Ogni magazzino end se costruito viene raggiunto solo da un cliente
 	forall(j in LOCATIONS_END_POINT)
@@ -255,7 +264,7 @@ model "Location Routing"
 
 !FUNZIONE OBIETTIVO------------------------------------------------------------
 
-  	Objective := sum(i in LOCATIONS_NUMBER) LOCATIONS(i,3) * build_depot(i) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) DISTANCE(i,j) * edge_exists(i,j)
+  	Objective := sum(i in LOCATIONS_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
 
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
@@ -285,12 +294,18 @@ model "Location Routing"
 
 		! TO-DO: se un cliente appartiene ad un magazzino ed è connesso direttamente al magazzino allora il cliente
 		! successivo dovrà appartenere anche lui al magazzino
-		!forall(k in LOCATIONS_NUMBER) do
-			!if(LOCATIONS(k,4) <= 0) then
+
+
+		(!forall(k in LOCATIONS_NUMBER) do
+			if(LOCATIONS(k,4) <= 0) then
 				! Se la domanda dei clienti di un TSP supera la capacità di un magazzino
-				! allora creaiamo un nuovo vincolo che impedisca l'appartenenza di almeno uno dei clienti al TSP del magazzino stesso.
-			!end-if
-		!end-do
+				! allora creaiamo un nuovo vincolo che impedisca l'appartenenza di almeno uno dei clienti al TSP del magazzino stesso.!Per ogni coppia di clienti che appartengono alla stesso magazzino, possono essere collegati tra loro
+
+				!Una coppia di clienti che non appartengono allo stesso magazzino non devono avere archi tra loro
+
+
+			end-if
+		end-do!)
 
 		! E' necessario associare ad ogni TSP parziale del magazzino la domanda dei clienti
 
