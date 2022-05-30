@@ -21,14 +21,14 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 10
-  	customers_number := 10
+    locations_number := 5
+  	customers_number := 15
 
   	points_number := locations_number*2 + customers_number
 
-  	depots_capacity := 10
+  	depots_capacity := 25
   	customer_max_demand := 10
-  	depot_max_cost := 50
+  	depot_max_cost := 100
   	point_max_range := 100
 
     POINTS_NUMBER:= 1..points_number
@@ -232,6 +232,8 @@ model "Location Routing"
 
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
 
+  	plot(false)
+
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
 
@@ -368,20 +370,34 @@ model "Location Routing"
 	end-procedure
 
 	procedure draw_locations
-		svgaddgroup("locations_points", "Locations Points")
-		svgaddgroup("locations_cost", "Locations Cost")
+		svgaddgroup("depots_built", "Depots Built")
+		svgaddgroup("depots_not_built", "Depots Not Built")
+		svgaddgroup("depots_built_cost", "Depots Built Cost")
+		svgaddgroup("depots_not_built_cost", "Depots Not Built Cost")
 		svgaddgroup("locations_index", "Locations Index")
 
-		forall(i in LOCATIONS_START_NUMBER) do
-			svgaddpoint("locations_points", LOCATIONS(i,1), LOCATIONS(i,2));
-			svgsetstyle("locations_points", SVG_COLOR, SVG_RED)
+		forall (i in LOCATIONS_START_NUMBER) do
+			if (getsol(build_depot(i)) = 1) then
+				svgaddpoint("depots_built", LOCATIONS(i,1), LOCATIONS(i,2));
+				svgsetstyle("depots_built", SVG_COLOR, SVG_RED)
+			else
+				svgaddpoint("depots_not_built", LOCATIONS(i,1), LOCATIONS(i,2));
+				svgsetstyle("depots_not_built", SVG_COLOR, SVG_GRAY)
+			end-if
 		end-do
 
 		forall(i in LOCATIONS_START_NUMBER) do
-			svgaddtext("locations_cost", LOCATIONS(i,1)+1, LOCATIONS(i,2)+1, strfmt(LOCATIONS(i,3),2));
-			svgsetstyle("locations_cost", SVG_FONTSIZE, "3pt")
-			svgsetstyle("locations_cost", SVG_FONTWEIGHT, "bold")
-			svgsetstyle("locations_cost", SVG_COLOR, SVG_BLUE)
+			if (getsol(build_depot(i)) = 1) then
+				svgaddtext("depots_built_cost", LOCATIONS(i,1)+1, LOCATIONS(i,2)+1, strfmt(LOCATIONS(i,3),2));
+				svgsetstyle("depots_built_cost", SVG_FONTSIZE, "3pt")
+				svgsetstyle("depots_built_cost", SVG_FONTWEIGHT, "bold")
+				svgsetstyle("depots_built_cost", SVG_COLOR, SVG_RED)
+			else
+				svgaddtext("depots_not_built_cost", LOCATIONS(i,1)+1, LOCATIONS(i,2)+1, strfmt(LOCATIONS(i,3),2));
+				svgsetstyle("depots_not_built_cost", SVG_FONTSIZE, "3pt")
+				svgsetstyle("depots_not_built_cost", SVG_FONTWEIGHT, "bold")
+				svgsetstyle("depots_not_built_cost", SVG_COLOR, SVG_GRAY)
+			end-if
 		end-do
 
 		forall(i in LOCATIONS_START_NUMBER) do
@@ -406,7 +422,7 @@ model "Location Routing"
 			svgaddtext("customers_demand", CUSTOMERS(i,1)+1, CUSTOMERS(i,2)+1, strfmt(CUSTOMERS(i,3),2));
 			svgsetstyle("customers_demand", SVG_FONTSIZE, "3pt")
 			svgsetstyle("customers_demand", SVG_FONTWEIGHT, "bold")
-			svgsetstyle("customers_demand", SVG_COLOR, SVG_BLUE)
+			svgsetstyle("customers_demand", SVG_COLOR, SVG_LIME)
 		end-do
 
 		forall(i in CUSTOMERS_NUMBER) do
@@ -451,8 +467,8 @@ model "Location Routing"
 	  		! svgwaitclose
 	  	else
 	  		svgrefresh
-	  		wait(1)
-	  		!svgpause
+	  		!wait(1)
+	  		svgpause
 	  	end-if
 
 	end-procedure
