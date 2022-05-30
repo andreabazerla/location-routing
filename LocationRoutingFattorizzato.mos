@@ -21,8 +21,8 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 5
-  	customers_number := 10
+    locations_number := 10
+  	customers_number := 15
 
   	points_number := locations_number*2 + customers_number
 
@@ -51,8 +51,6 @@ model "Location Routing"
 		build_depot: array(LOCATIONS_START_END_NUMBER) of mpvar
 		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_END_NUMBER) of mpvar
-
-        VINCOLI: dynamic array(1..points_number*points_number*points_number) of linctr
 
 		Objective: linctr
   	end-declarations
@@ -244,6 +242,47 @@ model "Location Routing"
 	azzera_visto
 
 	! Per ogni magazzino start, se il magazzino è stato costruito allora fai una visita
+	forall (i in LOCATIONS_START_NUMBER) do
+		if (getsol(build_depot(i)) = 1) then
+			visita(i)
+			break
+		end-if
+	end-do
+
+	! La somma degli archi uscenti da un nodo a tutti gli altri nodi dello stesso magazzino deve essere uguale a 1, altrimenti a 0
+	forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1)
+        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do
+            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) <= 1
+            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0
+        end-do
+
+	!
+	forall (k in LOCATIONS_END_NUMBER | getsol(build_depot(k)) = 1)
+		sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(j,k) = 1
+
+    minimize(Objective)
+	writeln("\nObjective = ", getobjval)
+
+	writeln("\nbuild_depot(i)")
+	forall(i in LOCATIONS_START_NUMBER) do
+		write(getsol(build_depot(i)))
+		write(' ')
+	end-do
+	writeln('')
+	forall(i in LOCATIONS_END_NUMBER) do
+		write(getsol(build_depot(i)))
+		write(' ')
+	end-do
+
+	writeln("\n\nedge_exists(i,j)")
+	forall(i in POINTS_NUMBER) do
+		forall(j in POINTS_NUMBER) do
+			write(getsol(edge_exists(i,j)))
+			write(" ")
+		end-do
+		writeln("")
+	end-do
+
 	forall(i in LOCATIONS_START_NUMBER) do
 		if(getsol(build_depot(i))=1) then
 			visita(i)
@@ -251,33 +290,11 @@ model "Location Routing"
 		end-if
 	end-do
 
+	plot(false)
+
 	iter := 0
 	n_nodi := points_number
 	while(Connessi < n_nodi) do
-
-	    !la somma degli archi da un nodo a tutti gli altri nodi dello stesso magazzino deve essere 1
-	    (!contatore := 1
-	    forall(k in LOCATIONS_START_NUMBER)
-	        if(getsol(build_depot(k)) = 1) then
-	            forall(i in CUSTOMERS_NUMBER) do
-	                create(VINCOLI(contatore))
-	                VINCOLI(contatore) := sum(j in CUSTOMERS_NUMBER) edge_exists(i,j) = 1
-	                contatore +=1
-	            end-do
-	       end-if
-
-
-        !la somma degli archi da un nodo a tutti gli altri nodi degli altri magazzini deve essere 0
-        forall(k in LOCATIONS_START_NUMBER |getsol(build_depot(k)) = 1)
-            forall(i in LOCATIONS_START_NUMBER|i<>k)
-                forall(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1)do
-                    create(VINCOLI(contatore))
-                    VINCOLI(contatore) := sum(l in CUSTOMERS_NUMBER | getsol(customer_depot(l,i)) = 1) edge_exists(j,l) = 0
-                    contatore+=1
-                end-do
-        !)
-		! Vincolo di CutSet
-
 
 		! TO-DO: se un cliente appartiene ad un magazzino ed è connesso direttamente al magazzino allora il cliente
 		! successivo dovrà appartenere anche lui al magazzino
@@ -293,7 +310,9 @@ model "Location Routing"
 					contatore += 1
 				end-do!)
 
-        sum(i,j in POINTS_NUMBER | (visto(i)+visto(j)=1)) edge_exists(i,j) >= 2
+		! Vincolo di CutSet
+        sum(i in POINTS_NUMBER, j in POINTS_NUMBER | (visto(i) + visto(j) = 1)) edge_exists(i,j) >= 2
+
 		iter := iter + 1
 		minimize(Objective)
 		writeln(iter, "\nObjective = ", getobjval)

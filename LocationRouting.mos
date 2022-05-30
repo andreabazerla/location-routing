@@ -22,8 +22,8 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 5
-  	customers_number := 10
+    locations_number := 10
+  	customers_number := 15
 
 	! Punti considerati come di inizio e di fine
   	points_number := locations_number*2 + customers_number
@@ -43,11 +43,11 @@ model "Location Routing"
   	CUSTOMERS_POINT := 2*locations_number+1..points_number
 
   	declarations
-		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..3) of integer
+		LOCATIONS: array(LOCATIONS_NUMBER) of array(1..4) of integer
 		LOCATIONS_START: array(LOCATIONS_NUMBER) of array(1..3) of integer
 		LOCATIONS_END: array(locations_number+1..locations_number*2) of array(1..3) of integer
 		LOCATIONS_START_END: array(1..locations_number*2) of array(1..3) of integer
-		VINCOLI: array(1..locations_number*customers_number*customers_number) of linctr
+
 		CUSTOMERS: array(CUSTOMERS_NUMBER) of array(1..3) of integer
 
 		POINTS: array(POINTS_NUMBER) of array(1..3) of integer
@@ -58,7 +58,7 @@ model "Location Routing"
 		DISTANCES: array(POINTS_NUMBER, POINTS_NUMBER) of real
 		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 
-		customer_depot: array(CUSTOMERS_NUMBER, 1..locations_number*2) of mpvar
+		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_POINT) of mpvar
 
 		Objective: linctr
   	end-declarations
@@ -67,7 +67,7 @@ model "Location Routing"
 
 	forall(i in POINTS_NUMBER, j in POINTS_NUMBER) edge_exists(i,j) is_binary
 
-	forall(i in CUSTOMERS_NUMBER, j in 1..locations_number*2) customer_depot(i,j) is_binary
+	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_POINT) customer_depot(i,j) is_binary
 
 !INITIALIZATION OF ARRAYS-----------------------------------------------------
 
@@ -76,7 +76,7 @@ model "Location Routing"
 		LOCATIONS(i,1) := integer(round((point_max_range*random)))
 		LOCATIONS(i,2) := integer(round((point_max_range*random)))
 		LOCATIONS(i,3) := integer(round((depot_max_cost*random)+0.5))
-	!	LOCATIONS(i,4) := depots_capacity
+		LOCATIONS(i,4) := depots_capacity
 	end-do
 
 	forall(i in LOCATIONS_NUMBER) do
@@ -167,7 +167,7 @@ model "Location Routing"
 
 !VINCOLI DEL MODELLO-----------------------------------------------------------
 
-	!Ogni cliente appartiene a un magazzino start
+	!Ogni cliente appartiene a un solo magazzino
 	forall(i in CUSTOMERS_NUMBER)
 		sum(j in LOCATIONS_START_POINT) customer_depot(i,j) = 1
 
@@ -198,37 +198,15 @@ model "Location Routing"
 
 
 	! Ogni cliente che appartiene ad un magazzino aperto puo' avere un arco che dal magazzino arriva a lui stesso
-	!Qui si ragiona per l'arco che va dal magazzino start al cliente
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
 		edge_exists(j,i+locations_number*2) <= customer_depot(i,j)
 
 	! Ogni cliente che appartiene ad un magazzino aperto puo' avere un arco che da lui stesso arriva al magazzino
-	!Qui si ragiona per l'arco che da cliente va a magazzino end
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
 		edge_exists(i+locations_number*2,j+locations_number) <= customer_depot(i,j)
-
+		
 	!TO-DO: se due clienti appartengono allo stesso magazzino, allora ci può essere un arco che li collega
 	!ma se due clienti NON appartengono allo stesso magazzino, allora non ci può essere un arco che li collega
-	!forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_NUMBER)
-	!	customer_depot(i,k)+customer_depot(j,k)  > edge_exists(i,j)
-
-	!Se sono un cliente i tutti i miei archi uscenti devono andare verso un cliente j che appartiene al mio stesso magazzino
-
-	!Per ogni magazzino, ogni cliente i che gli appartiene può andare verso un cliente j che gli appartiene
-	!forall(k in LOCATIONS_NUMBER)
-	!	forall(i in CUSTOMERS_NUMBER)
-	!		forall(j in CUSTOMERS_NUMBER | i<>j) do
-	!			edge_exists(i+locations_number*2,j+locations_number*2) <= customer_depot(i,k)
-	!			edge_exists(i+locations_number*2,j+locations_number*2) <= customer_depot(j,k)
-	!			edge_exists(i+locations_number*2,j+locations_number*2) >= customer_depot(i,k) + customer_depot(j,k) -1
-	!		end-do
-
-
-
-
-
-			!	customer_depot(i,k) and  customer_depot(j,k) = edge_exists(i,j)
-			!	edge_exists(i+locations_number*2,k+locations_number*2) < customer_depot(i,j)+customer_depot(k,j)
 
 	!Ogni cliente che appartiene ad un magazzino aperto può avere un arco proveniente da un altro cliente appartenente al magazzino
 	!forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER, k in CUSTOMERS_NUMBER)
@@ -267,10 +245,9 @@ model "Location Routing"
 	!	sum(j in CUSTOMERS_POINT) edge_exists(i,j) = 0
 
 	!ogni cliente appartiene ad un solo magazzino -- mag entrata e mag uscita devono coincidere nel cliente
-	!  ->VA  ma crea dei magazzini fasulli a 0!!
-	! Ciclo sui magazzini start e li associo a magazzino end
-	forall(j in LOCATIONS_NUMBER, i in CUSTOMERS_NUMBER)
-		customer_depot(i, j+locations_number) = customer_depot(i,j)
+	!  ->VA!!
+	!forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_NUMBER)
+	!	customer_depot(i, j+locations_number) = customer_depot(i,j)
 
 	!cliente puo' andare a end o cliente
 	!forall(i in lo
@@ -317,22 +294,8 @@ model "Location Routing"
 
 		! TO-DO: se un cliente appartiene ad un magazzino ed è connesso direttamente al magazzino allora il cliente
 		! successivo dovrà appartenere anche lui al magazzino
-		contatore := 1
-		forall(k in LOCATIONS_NUMBER)
-			forall(i in CUSTOMERS_NUMBER)
-				forall(j in CUSTOMERS_NUMBER | i<>j) do
-					if((getsol(customer_depot(i,k)) + getsol(customer_depot(j,k))) < 2) then
-						VINCOLI(contatore) := edge_exists(i+locations_number*2,j+locations_number*2) = 0
-					else
-						VINCOLI(contatore) := edge_exists(i+locations_number*2,j+locations_number*2) <= 1
-					end-if
-					contatore += 1
-				end-do
 
-					!edge_exists(j+locations_number*2,i+locations_number*2) = 0
-					!edge_exists(i+locations_number*2,j+locations_number*2) <= customer_depot(i,k)
-					!edge_exists(i+locations_number*2,j+locations_number*2) <= customer_depot(j,k)
-					!edge_exists(i+locations_number*2,j+locations_number*2) >= customer_depot(i,k) + customer_depot(j,k) -1
+
 		(!forall(k in LOCATIONS_NUMBER) do
 			if(LOCATIONS(k,4) <= 0) then
 				! Se la domanda dei clienti di un TSP supera la capacità di un magazzino
@@ -345,8 +308,6 @@ model "Location Routing"
 		end-do!)
 
 		! E' necessario associare ad ogni TSP parziale del magazzino la domanda dei clienti
-		!forall(i in 1..locations_number*customers_number*customers_number)
-		!	writeln(getact(VINCOLI(i)))
 
 		iter := iter + 1
 		minimize(Objective)
@@ -404,14 +365,14 @@ model "Location Routing"
 	! Customers-Depots
 	writeln("\n\ncustomer_depot(i,j)")
 	forall(i in 1..locations_number*2) do
-		forall(j in 1..locations_number*2) do
+		forall(j in LOCATIONS_START_POINT) do
 			write('0 ')
 		end-do
 		writeln('')
 	end-do
 	writeln('Next index: ', locations_number*2+1)
 	forall(i in CUSTOMERS_NUMBER) do
-		forall(j in 1..locations_number*2) do
+		forall(j in LOCATIONS_START_POINT) do
 			write(getsol(customer_depot(i,j)))
 			write(' ')
 		end-do
@@ -466,17 +427,17 @@ model "Location Routing"
 	procedure azzera_visto
 		forall(i in POINTS_NUMBER)
 			visto(i) := 0
-		!forall(i in LOCATIONS_START_POINT) LOCATIONS(i,4) := depots_capacity
+		forall(i in LOCATIONS_START_POINT) LOCATIONS(i,4) := depots_capacity
 	end-procedure
 
 	procedure visita(n:integer)
 		if(visto(n)<>1) then ! Se il nodo dove siamo posizionati non è stato visto...
 			visto(n) := 1 !...allora lo pongo come visto.
 			forall(m in POINTS_NUMBER | n<>m and round(getsol(edge_exists(n,m)))<>0) do ! Mi sposto al nodo successivo collegato dall'arco orientato
-				!if(m > locations_number*2) then ! Se m è un cliente
-					!forall(i in LOCATIONS_START_POINT | getsol(customer_depot(m-(locations_number*2),i))=1) ! Se m appartiene al magazzino i
-						!LOCATIONS(i,4) -= CUSTOMERS(m-(locations_number*2),3) !...allora diminuisco la capacità residua del magazzino
-				!end-if
+				if(m > locations_number*2) then ! Se m è un cliente
+					forall(i in LOCATIONS_START_POINT | getsol(customer_depot(m-(locations_number*2),i))=1) ! Se m appartiene al magazzino i
+						LOCATIONS(i,4) -= CUSTOMERS(m-(locations_number*2),3) !...allora diminuisco la capacità residua del magazzino
+				end-if
 				visita(m) ! Visito il nodo in cui mi sono spostato
 			end-do
 		end-if
@@ -566,8 +527,8 @@ model "Location Routing"
 	  		! svgwaitclose
 	  	else
 	  		svgrefresh
-	  		!wait(1)
-	  		svgpause
+	  		wait(1)
+	  		!svgpause
 	  	end-if
 
 	end-procedure
