@@ -21,14 +21,14 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 10
-  	customers_number := 15
+    locations_number := 15
+  	customers_number := 10
 
   	points_number := locations_number*2 + customers_number
 
   	depots_capacity := 15
   	customer_max_demand := 10
-  	depot_max_cost := 5
+  	depot_max_cost := 500
   	point_max_range := 100
 
     POINTS_NUMBER:= 1..points_number
@@ -249,11 +249,21 @@ model "Location Routing"
 		end-if
 	end-do
 
-	! La somma degli archi uscenti da un nodo a tutti gli altri nodi dello stesso magazzino deve essere uguale a 1, altrimenti a 0
-	forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1)
-        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do
-            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) <= 1
-            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0
+	! Archi uscenti dai clienti di un magazzino K
+	forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
+        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+          if(getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
+              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
+            else
+              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! sicuramente non ne esce uno verso i clienti dello stesso magazzino
+            end-if
+            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
+        end-do
+
+	! Archi entranti nei clienti dagli altri magazzini di START 
+	forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
+        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+             sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! nessun arco di nessun altro magazzino di START deve entrare
         end-do
 
 	!
