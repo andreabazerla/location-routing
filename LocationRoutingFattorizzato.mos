@@ -21,14 +21,14 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    locations_number := 15
+    locations_number := 10
   	customers_number := 10
 
   	points_number := locations_number*2 + customers_number
 
-  	depots_capacity := 15
+  	depots_capacity := 10
   	customer_max_demand := 10
-  	depot_max_cost := 500
+  	depot_max_cost := 50
   	point_max_range := 100
 
     POINTS_NUMBER:= 1..points_number
@@ -249,71 +249,21 @@ model "Location Routing"
 		end-if
 	end-do
 
-	! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
-	forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
-        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
-          if(getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
-              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
-            else
-              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! altrimenti non ne esce uno verso i clienti dello stesso magazzino
-            end-if
-            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
-            sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
-        end-do
-
-	!
-	forall (k in LOCATIONS_END_NUMBER | getsol(build_depot(k)) = 1)
-		sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(j,k) = 1
-
-    minimize(Objective)
-	writeln("\nObjective = ", getobjval)
-
-	writeln("\nbuild_depot(i)")
-	forall(i in LOCATIONS_START_NUMBER) do
-		write(getsol(build_depot(i)))
-		write(' ')
-	end-do
-	writeln('')
-	forall(i in LOCATIONS_END_NUMBER) do
-		write(getsol(build_depot(i)))
-		write(' ')
-	end-do
-
-	writeln("\n\nedge_exists(i,j)")
-	forall(i in POINTS_NUMBER) do
-		forall(j in POINTS_NUMBER) do
-			write(getsol(edge_exists(i,j)))
-			write(" ")
-		end-do
-		writeln("")
-	end-do
-
-	forall(i in LOCATIONS_START_NUMBER) do
-		if(getsol(build_depot(i))=1) then
-			visita(i)
-			break
-		end-if
-	end-do
-
-	plot(false)
-
 	iter := 0
 	n_nodi := points_number
 	while(Connessi < n_nodi) do
 
-		! TO-DO: se un cliente appartiene ad un magazzino ed è connesso direttamente al magazzino allora il cliente
-		! successivo dovrà appartenere anche lui al magazzino
-		(!contatore := 1
-		forall(k in LOCATIONS_START_NUMBER)
-			forall(i in CUSTOMERS_NUMBER)
-				forall(j in CUSTOMERS_NUMBER | i<>j) do
-					if((getsol(customer_depot(i,k)) + getsol(customer_depot(j,k))) = 1) then
-						VINCOLI(contatore) := edge_exists(i,j) = 0  !se due clienti appartengono a diversi magazzini allora non sono direttamente collegati
-					elif((getsol(customer_depot(i,k)) + getsol(customer_depot(j,k))) = 2) then
-						VINCOLI(contatore) := edge_exists(i,j) <= 1
-					end-if
-					contatore += 1
-				end-do!)
+		! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
+		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
+	        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+	          if(getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
+	              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
+	            else !altrimenti, se punta verso il magazzino di end
+	              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
+	            end-if
+	            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
+	            sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
+	        end-do
 
 		! Vincolo di CutSet
         sum(i in POINTS_NUMBER, j in POINTS_NUMBER | (visto(i) + visto(j) = 1)) edge_exists(i,j) >= 2
@@ -497,8 +447,8 @@ model "Location Routing"
 	  		! svgwaitclose
 	  	else
 	  		svgrefresh
-	  		!wait(1)
-	  		svgpause
+	  		wait(1)
+	  		!svgpause
 	  	end-if
 
 	end-procedure
