@@ -225,7 +225,6 @@ model "Location Routing"
 	! la somma delle domande di tutti i clienti deve essere minore uguale della capacità dei magazzini moltiplicata per il numero di possibili magazzini
 	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= sum(j in LOCATIONS_START_NUMBER) depots_capacity*build_depot(j)
 
-
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
 
@@ -341,6 +340,11 @@ model "Location Routing"
 
 	plot(true)
 
+	minimize(Objective)
+	writeln("costo soluzione intera: ", getobjval)
+	minimize(XPRS_LIN, Objective)
+	writeln("rilassamento continuo: ", getobjval)
+
 
 !FUNZIONI---------------------------------------------------------------------
 
@@ -395,7 +399,7 @@ model "Location Routing"
 
 		forall(i in CUSTOMERS_NUMBER) do
 			svgaddpoint("customers_points", CUSTOMERS(i,1), CUSTOMERS(i,2));
-			svgsetstyle("customers_points", SVG_COLOR, SVG_YELLOW)
+			svgsetstyle("customers_points", SVG_COLOR, SVG_LIME)
 		end-do
 
 		forall(i in CUSTOMERS_NUMBER) do
