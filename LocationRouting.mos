@@ -36,7 +36,7 @@ model "Location Routing"
     debug_file_name := "" + svgtimestamp + "_debug.txt"
     !----------------------------------------------------
 
-    locations_number := 5
+    locations_number := 10
   	customers_number := 15
 
   	points_number := locations_number*2 + customers_number
@@ -271,7 +271,7 @@ model "Location Routing"
 	iter := 0
 	n_nodi := points_number
 	while(Connessi < n_nodi) do
-	
+
 		reset(a)
 		reset(b)
 		reset(c)
