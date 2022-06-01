@@ -3,3 +3,4 @@ out/
 *.bim
 *.bdg
 *.svg
+*debug.txt

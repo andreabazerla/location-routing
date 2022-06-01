@@ -24,11 +24,15 @@ model "Location Routing"
     	depots_capacity: integer
     end-declarations
 
-    ! ---- Variabili per la stampa delle immagini svg
+    ! ---- Variabili per la stampa delle immagini svg ---
     svgcounter := 0
     svgtimestamp := timestamp
     saved := false ! setta a true per salvare le svg
-    ! ----
+    ! ---- Variabili per il debug -----------------------
+    debug_su_file := false
+    debug_file_name := "" + svgtimestamp + "_debug.txt"
+    !----------------------------------------------------
+
 
     locations_number := 5
   	customers_number := 15
@@ -318,6 +322,11 @@ model "Location Routing"
 !PROCEDURE--------------------------------------------------------------------
 
 	procedure debug_magazzini_clienti
+		if(debug_su_file) then
+			writeln("debug su file: " + debug_file_name)
+			fopen(debug_file_name, F_APPEND)
+		end-if
+
 		writeln("---------- Debug magazzini clienti ----------")
 		writeln("magazzino -> {clienti}")
 		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do
@@ -328,9 +337,18 @@ model "Location Routing"
 			writeln("}")
 		end-do
 		writeln("---------------------------------------------")
+
+		if(debug_su_file) then
+			fclose(F_APPEND)
+		end-if
 	end-procedure
 
 	procedure debug_archi
+		if(debug_su_file) then
+			writeln("debug su file: " + debug_file_name)
+			fopen(debug_file_name, F_APPEND)
+		end-if
+
 		writeln("---------------- Debug archi ----------------")
 		writeln("nodo\t->\tnodo\t->\tnodo")
 		writeln("---------------------------------------------")
@@ -339,6 +357,10 @@ model "Location Routing"
 				writeln(i, "\t->\t", j, "\t->\t", k)
 			end-if
 		writeln("---------------------------------------------")
+
+		if(debug_su_file) then
+			fclose(F_APPEND)
+		end-if
 	end-procedure
 
 	procedure stampa_matrici(mag:boolean, cus_dep:boolean, edg:boolean)
