@@ -12,7 +12,7 @@ model "Location Routing"
   	forward procedure draw_customers
   	forward procedure draw_edges
 
-  	forward procedure plot(saved:boolean)
+  	forward procedure plot
 
   	declarations
     	locations_number: integer
@@ -20,6 +20,12 @@ model "Location Routing"
     	points_number: integer
     	depots_capacity: integer
     end-declarations
+
+    ! ---- Variabili per la stampa delle immagini svg
+    svgcounter := 0
+    svgtimestamp := timestamp
+    saved := false ! setta a true per salvare le svg
+    ! ----
 
     locations_number := 5
   	customers_number := 15
@@ -232,12 +238,12 @@ model "Location Routing"
 
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
 
-  	plot(false)
+  	plot
 
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
 
-	plot(false)
+	plot
 
 	!azzera visto azzera le visite su tutti i punti
 	azzera_visto
@@ -302,7 +308,7 @@ model "Location Routing"
 			end-if
 		end-do
 
-		plot(false)
+		plot
 	end-do
 
 !STAMPE---------------------------
@@ -340,7 +346,7 @@ model "Location Routing"
 		writeln('')
 	end-do
 
-	plot(true)
+	plot
 
 	minimize(Objective)
 	writeln("costo soluzione intera: ", getobjval)
@@ -450,7 +456,7 @@ model "Location Routing"
 		end-do
 	end-procedure
 
-	procedure plot(saved:boolean)
+	procedure plot
 		svgerase
 
 	  	draw_locations
@@ -462,13 +468,17 @@ model "Location Routing"
 	  	svgsetgraphlabels("x", "y")
 
 		if(saved) then
-	  		svgsave("graph.svg")
+			filename := "run" + svgtimestamp + "_plot" + svgcounter + ".svg"
+	  		svgcounter := svgcounter + 1
+	  		svgsave(filename)
 	  		svgrefresh
-	  		! svgwaitclose
+	  		wait(1)
+	  		!svgwaitclose
 	  	else
 	  		svgrefresh
 	  		!wait(1)
 	  		svgpause
+
 	  	end-if
 
 	end-procedure
