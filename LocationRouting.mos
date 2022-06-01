@@ -11,6 +11,9 @@ model "Location Routing"
 	forward procedure draw_locations
   	forward procedure draw_customers
   	forward procedure draw_edges
+  	forward procedure stampa_matrici(mag:boolean, cus_dep:boolean, edg:boolean)
+  	forward procedure debug_magazzini_clienti
+  	forward procedure debug_archi
 
   	forward procedure plot
 
@@ -279,25 +282,9 @@ model "Location Routing"
 		minimize(Objective)
 		writeln(iter, "\nObjective = ", getobjval)
 
-		writeln("\nbuild_depot(i)")
-		forall(i in LOCATIONS_START_NUMBER) do
-			write(getsol(build_depot(i)))
-			write(' ')
-		end-do
-		writeln('')
-		forall(i in LOCATIONS_END_NUMBER) do
-			write(getsol(build_depot(i)))
-			write(' ')
-		end-do
-
-		writeln("\n\nedge_exists(i,j)")
-		forall(i in POINTS_NUMBER) do
-			forall(j in POINTS_NUMBER) do
-				write(getsol(edge_exists(i,j)))
-				write(" ")
-			end-do
-			writeln("")
-		end-do
+		!stampa_matrici(false,true,true)
+		debug_magazzini_clienti
+		debug_archi
 
 		azzera_visto
 
@@ -311,40 +298,9 @@ model "Location Routing"
 		plot
 	end-do
 
-!STAMPE---------------------------
-
-	! Magazzini
-	writeln("\nbuild_depot(i)")
-	forall(i in LOCATIONS_START_NUMBER) do
-		write(getsol(build_depot(i)))
-		write(' ')
-	end-do
-	writeln('')
-	forall(i in LOCATIONS_END_NUMBER) do
-		write(getsol(build_depot(i)))
-		write(' ')
-	end-do
-
-	! Customers-Depots
-	writeln("\n\ncustomer_depot(i,j)")
-	writeln('Next index: ', locations_number*2+1)
-	forall(i in CUSTOMERS_NUMBER) do
-		forall(j in LOCATIONS_START_END_NUMBER) do
-			write(getsol(customer_depot(i,j)))
-			write(' ')
-		end-do
-		writeln('')
-	end-do
-
-	! Archi
-	writeln("\nedge_exists(i,j)")
-	forall(i in POINTS_NUMBER) do
-		forall(j in POINTS_NUMBER) do
-			write(getsol(edge_exists(i,j)))
-			write(' ')
-		end-do
-		writeln('')
-	end-do
+	!stampa_matrici(true,true,true)
+	debug_magazzini_clienti
+	debug_archi
 
 	plot
 
@@ -360,6 +316,72 @@ model "Location Routing"
 		returned := sum(i in POINTS_NUMBER) visto(i)
 	end-function
 !PROCEDURE--------------------------------------------------------------------
+
+	procedure debug_magazzini_clienti
+		writeln("---------- Debug magazzini clienti ----------")
+		writeln("magazzino -> {clienti}")
+		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do
+			write(k, " -> {")
+			forall(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) do
+				write(j, " ")
+			end-do
+			writeln("}")
+		end-do
+		writeln("---------------------------------------------")
+	end-procedure
+
+	procedure debug_archi
+		writeln("---------------- Debug archi ----------------")
+		writeln("nodo\t->\tnodo\t->\tnodo")
+		writeln("---------------------------------------------")
+		forall (j in POINTS_NUMBER, i in POINTS_NUMBER, k in POINTS_NUMBER)
+			if(getsol(edge_exists(i,j)) = 1 and getsol(edge_exists(j,k)) = 1) then
+				writeln(i, "\t->\t", j, "\t->\t", k)
+			end-if
+		writeln("---------------------------------------------")
+	end-procedure
+
+	procedure stampa_matrici(mag:boolean, cus_dep:boolean, edg:boolean)
+		if(mag) then
+			! Magazzini
+			writeln("\nbuild_depot(i)")
+			forall(i in LOCATIONS_START_NUMBER) do
+				write(getsol(build_depot(i)))
+				write(' ')
+			end-do
+			writeln('')
+			forall(i in LOCATIONS_END_NUMBER) do
+				write(getsol(build_depot(i)))
+				write(' ')
+			end-do
+		end-if
+
+		if(cus_dep) then
+			! Customers-Depots
+			writeln("\n\ncustomer_depot(i,j)")
+			writeln('Next index: ', locations_number*2+1)
+			forall(i in CUSTOMERS_NUMBER) do
+				forall(j in LOCATIONS_START_END_NUMBER) do
+					write(getsol(customer_depot(i,j)))
+					write(' ')
+				end-do
+				writeln('')
+			end-do
+		end-if
+
+		if(edg) then
+			! Archi
+			writeln("\nedge_exists(i,j)")
+			forall(i in POINTS_NUMBER) do
+				forall(j in POINTS_NUMBER) do
+					write(getsol(edge_exists(i,j)))
+					write(' ')
+				end-do
+				writeln('')
+			end-do
+		end-if
+
+	end-procedure
 
 	procedure azzera_visto
 		forall(i in POINTS_NUMBER)
