@@ -43,7 +43,7 @@ model "Location Routing"
 
   	depots_capacity := 25
   	customer_max_demand := 10
-  	depot_max_cost := 100
+  	depot_max_cost := 15
   	point_max_range := 100
 
     POINTS_NUMBER:= 1..points_number
@@ -67,10 +67,9 @@ model "Location Routing"
 		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_END_NUMBER) of mpvar
 
-		a: array(LOCATIONS_START_NUMBER, CUSTOMERS_NUMBER) of linctr
-		b: array(LOCATIONS_START_NUMBER, CUSTOMERS_NUMBER) of linctr
-		c: array(LOCATIONS_START_NUMBER, CUSTOMERS_NUMBER) of linctr
-		d: array(LOCATIONS_START_NUMBER, CUSTOMERS_NUMBER) of linctr
+		a: dynamic array(range) of linctr
+		b: dynamic array(range) of linctr
+		c: dynamic array(range) of linctr
 		Objective: linctr
   	end-declarations
 
@@ -180,7 +179,7 @@ model "Location Routing"
 
 	! Vincolo di capacita'
 	forall (j in LOCATIONS_START_NUMBER)
-		sum(i in CUSTOMERS_NUMBER) (CUSTOMERS(i,3) * customer_depot(i,j)) <= depots_capacity
+		sum(i in CUSTOMERS_NUMBER) (CUSTOMERS(i,3) * customer_depot(i,j)) <= depots_capacity*build_depot(j)
 
     ! Se un magazzino è aperto, allora il cliente può appartenere a quel magazzino
 	forall (i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER)
@@ -275,19 +274,21 @@ model "Location Routing"
 		reset(a)
 		reset(b)
 		reset(c)
-		reset(d)
-
+		conta :=1
 		! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
-		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
+
+		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do ! per ogni magazzino di START k
 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
 	        	if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
-	            	a(k,i) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
+	            	a(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
 	        	else !altrimenti, se punta verso il magazzino di end
-	            	b(k,i) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
+	            	a(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
 	        	end-if
-				c(k,i) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
-				d(k,i) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
+				b(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
+				c(conta) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
+	        	conta := conta+1
 	        end-do
+	    end-do
 
 		! Vincolo di CutSet
         sum(i in POINTS_NUMBER, j in POINTS_NUMBER | (visto(i) + visto(j) = 1)) edge_exists(i,j) >= 2
