@@ -271,12 +271,12 @@ model "Location Routing"
 		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
 	        forall(i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
 	          if(getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
-	              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
+	              a := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
 	            else !altrimenti, se punta verso il magazzino di end
-	              sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
+	              b := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
 	            end-if
-	            sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
-	            sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
+	            c := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
+	            d := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
 	        end-do
 
 		! Vincolo di CutSet
@@ -288,7 +288,7 @@ model "Location Routing"
 
 		!stampa_matrici(false,true,true)
 		debug_magazzini_clienti
-		debug_archi
+		!debug_archi
 
 		azzera_visto
 
@@ -328,13 +328,16 @@ model "Location Routing"
 		end-if
 
 		writeln("---------- Debug magazzini clienti ----------")
-		writeln("magazzino -> {clienti}")
+		writeln("magazzino_start -> {clienti} -> magazzino_end| domanda_accumulativa")
 		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do
+			cap := 0
 			write(k, " -> {")
 			forall(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) do
 				write(j, " ")
+				cap := cap + CUSTOMERS(j,3)
 			end-do
-			writeln("}")
+			writeln("} -> ", k+locations_number ," | ", cap)
+			cap:=0
 		end-do
 		writeln("---------------------------------------------")
 
