@@ -271,6 +271,11 @@ model "Location Routing"
 	iter := 0
 	n_nodi := points_number
 	while(Connessi < n_nodi) do
+	
+		reset(a)
+		reset(b)
+		reset(c)
+		reset(d)
 
 		! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
 		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) ! per ogni magazzino di START k
