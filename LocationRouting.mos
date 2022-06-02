@@ -37,13 +37,13 @@ model "Location Routing"
     !----------------------------------------------------
 
     locations_number := 10
-  	customers_number := 15
+  	customers_number := 7
 
   	points_number := locations_number*2 + customers_number
 
   	depots_capacity := 25
   	customer_max_demand := 10
-  	depot_max_cost := 15
+  	depot_max_cost := 500 !numero alto, predilige cicli lunghi, numero basso, predilige apertura di più magazzini vicini ai clienti
   	point_max_range := 100
 
     POINTS_NUMBER:= 1..points_number
@@ -66,6 +66,7 @@ model "Location Routing"
 		build_depot: array(LOCATIONS_START_END_NUMBER) of mpvar
 		edge_exists: array(POINTS_NUMBER, POINTS_NUMBER) of mpvar
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_END_NUMBER) of mpvar
+		x: array(CUSTOMERS_NUMBER, 1..locations_number*2) of mpvar
 
 		a: dynamic array(range) of linctr
 		b: dynamic array(range) of linctr
@@ -78,6 +79,8 @@ model "Location Routing"
 	forall (i in POINTS_NUMBER, j in POINTS_NUMBER) edge_exists(i,j) is_binary
 
 	forall (i in CUSTOMERS_NUMBER, j in LOCATIONS_START_END_NUMBER) customer_depot(i,j) is_binary
+
+	forall (j in LOCATIONS_START_END_NUMBER, k in CUSTOMERS_NUMBER) x(k,j) is_binary
 
     !INITIALIZATION OF ARRAYS-----------------------------------------------------
 
@@ -179,7 +182,7 @@ model "Location Routing"
 
 	! Vincolo di capacita'
 	forall (j in LOCATIONS_START_NUMBER)
-		sum(i in CUSTOMERS_NUMBER) (CUSTOMERS(i,3) * customer_depot(i,j)) <= depots_capacity*build_depot(j)
+		sum(i in CUSTOMERS_NUMBER) (CUSTOMERS(i,3) * customer_depot(i,j)) <= depots_capacity
 
     ! Se un magazzino è aperto, allora il cliente può appartenere a quel magazzino
 	forall (i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER)
@@ -242,6 +245,31 @@ model "Location Routing"
 	! la somma delle domande di tutti i clienti deve essere minore uguale della capacità dei magazzini moltiplicata per il numero di possibili magazzini
 	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= sum(j in LOCATIONS_START_NUMBER) depots_capacity*build_depot(j)
 
+
+	(!forall (k in LOCATIONS_START_NUMBER ) do ! per ogni magazzino di START k
+ 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+ 	    		if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
+ 	            	a(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1
+
+	!)
+
+	(!forall (k in LOCATIONS_START_NUMBER ) do ! per ogni magazzino di START k
+ 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+ 	    		b(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0
+
+
+	forall (k in LOCATIONS_START_NUMBER) do ! per ogni magazzino di START k
+ 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+ 	    		c(contatoreWhile) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0!)
+
+	forall(k in LOCATIONS_START_NUMBER, h in LOCATIONS_START_NUMBER)
+		forall(j in CUSTOMERS_NUMBER) do
+			x(j,k+h) <= customer_depot(j,k)
+			x(j,k+h) <= customer_depot(j,h)
+			x(j,k+h) >= customer_depot(j,k)+customer_depot(j,h) -1
+			sum(i in CUSTOMERS_NUMBER) edge_exists(j,i) = x(j,k+h)
+		end-do
+
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
 
@@ -274,21 +302,24 @@ model "Location Routing"
 		reset(a)
 		reset(b)
 		reset(c)
-		conta :=1
+		contatoreWhile :=1
 		! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
 
-		forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do ! per ogni magazzino di START k
-	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
-	        	if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
-	            	a(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
-	        	else !altrimenti, se punta verso il magazzino di end
-	            	a(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
-	        	end-if
-				b(conta) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
-				c(conta) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
-	        	conta := conta+1
-	        end-do
-	    end-do
+ 		!forall (k in LOCATIONS_START_NUMBER | getsol(build_depot(k)) = 1) do ! per ogni magazzino di START k
+ 	        !forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
+ 	        	!if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
+ 	            !	a(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1 ! sicuramente ne esce uno verso i clienti dello stesso magazzino
+ 	        	!else !altrimenti, se punta verso il magazzino di end
+ 	            !	a(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 0 ! non esce nessun arco verso i clienti dello stesso magazzino
+ 	        	!end-if
+ 				!b(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0 ! in tutti i casi non deve uscirne uno verso un cliente di un'altro magazzino
+ 				!c(contatoreWhile) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0 ! e nemmeno nessun arco di nessun altro magazzino di START deve entrare nel cliente i
+ 	        	!a(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0
+ 	        !	contatoreWhile := contatoreWhile+1
+ 	     !   end-do
+	  !  end-do
+
+
 
 		! Vincolo di CutSet
         sum(i in POINTS_NUMBER, j in POINTS_NUMBER | (visto(i) + visto(j) = 1)) edge_exists(i,j) >= 2
