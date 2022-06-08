@@ -36,12 +36,12 @@ model "Location Routing"
     debug_file_name := "" + svgtimestamp + "_debug.txt"
     !----------------------------------------------------
 
-    locations_number := 10
-  	customers_number := 7
+    locations_number := 8
+  	customers_number := 13
 
   	points_number := locations_number*2 + customers_number
 
-  	depots_capacity := 25
+  	depots_capacity := 20
   	customer_max_demand := 10
   	depot_max_cost := 500 !numero alto, predilige cicli lunghi, numero basso, predilige apertura di più magazzini vicini ai clienti
   	point_max_range := 100
@@ -262,13 +262,20 @@ model "Location Routing"
  	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
  	    		c(contatoreWhile) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0!)
 
-	forall(k in LOCATIONS_START_NUMBER, h in LOCATIONS_START_NUMBER)
+	(!forall(k in LOCATIONS_START_NUMBER, h in LOCATIONS_START_NUMBER)
 		forall(j in CUSTOMERS_NUMBER) do
 			x(j,k+h) <= customer_depot(j,k)
 			x(j,k+h) <= customer_depot(j,h)
 			x(j,k+h) >= customer_depot(j,k)+customer_depot(j,h) -1
 			sum(i in CUSTOMERS_NUMBER) edge_exists(j,i) = x(j,k+h)
 		end-do
+
+	!)
+
+	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in CUSTOMERS_NUMBER) do
+		customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
+		customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
+	end-do
 
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
