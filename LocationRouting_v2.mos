@@ -2,7 +2,7 @@ model "Location Routing"
 
 	uses "mmxprs", "mmsvg"
 
-	version 2.2.0
+	version 2.0.0
 
 	setparam("XPRS_VERBOSE", false)
 
@@ -36,8 +36,8 @@ model "Location Routing"
     debug_file_name := "" + svgtimestamp + "_debug.txt"
     !----------------------------------------------------
 
-    locations_number := 7
-  	customers_number := 8
+    locations_number := 8
+  	customers_number := 7
 
   	points_number := locations_number*2 + customers_number
 
@@ -68,6 +68,9 @@ model "Location Routing"
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_END_NUMBER) of mpvar
 		x: array(CUSTOMERS_NUMBER, CUSTOMERS_NUMBER, LOCATIONS_START_NUMBER) of mpvar
 
+		a: dynamic array(range) of linctr
+		b: dynamic array(range) of linctr
+		c: dynamic array(range) of linctr
 		Objective: linctr
   	end-declarations
 
@@ -242,38 +245,15 @@ model "Location Routing"
 	! la somma delle domande di tutti i clienti deve essere minore uguale della capacità dei magazzini moltiplicata per il numero di possibili magazzini
 	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= sum(j in LOCATIONS_START_NUMBER) depots_capacity*build_depot(j)
 
-	
-		
-	(!forall (k in LOCATIONS_START_NUMBER ) do ! per ogni magazzino di START k
- 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
- 	    		if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
- 	            	a(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 1) edge_exists(i,j) = 1
 
-	!)
-
-	(!forall (k in LOCATIONS_START_NUMBER ) do ! per ogni magazzino di START k
- 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
- 	    		b(contatoreWhile) := sum(j in CUSTOMERS_NUMBER | getsol(customer_depot(j,k)) = 0) edge_exists(i,j) = 0
-
-
-	forall (k in LOCATIONS_START_NUMBER) do ! per ogni magazzino di START k
- 	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
- 	    		c(contatoreWhile) := sum(j in LOCATIONS_START_NUMBER | getsol(customer_depot(i,j)) = 0) edge_exists(j,i) = 0!)
-
-	(!forall(k in LOCATIONS_START_NUMBER, h in LOCATIONS_START_NUMBER)
-		forall(j in CUSTOMERS_NUMBER) do
-			x(j,k+h) <= customer_depot(j,k)
-			x(j,k+h) <= customer_depot(j,h)
-			x(j,k+h) >= customer_depot(j,k)+customer_depot(j,h) -1
-			sum(i in CUSTOMERS_NUMBER) edge_exists(j,i) = x(j,k+h)
-		end-do
-
-	!)
-
-	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in CUSTOMERS_NUMBER) do
-		customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
-		customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
+	!nuovi vincoli dettati dalla prof
+	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER)do
+		x(i,j,k) <= customer_depot(i,k)
+		x(i,j,k) <= customer_depot(j,k)
+		x(i,j,k) <= build_depot(k)
 	end-do
+	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER)
+		edge_exists(i,j) = sum(k in LOCATIONS_START_NUMBER) x(i,j,k)
 
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
@@ -304,7 +284,9 @@ model "Location Routing"
 	n_nodi := points_number
 	while(Connessi < n_nodi) do
 
-
+		reset(a)
+		reset(b)
+		reset(c)
 		contatoreWhile :=1
 		! Archi uscenti dai clienti di un magazzino K, ed entranti nei clienti del magazzino K
 
@@ -568,8 +550,8 @@ model "Location Routing"
 	  		!svgwaitclose
 	  	else
 	  		svgrefresh
-	  		wait(1)
-	  		!svgpause
+	  		!wait(1)
+	  		svgpause
 	  	end-if
 
 	end-procedure
