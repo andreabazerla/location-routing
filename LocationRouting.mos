@@ -284,6 +284,8 @@ model "Location Routing"
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
 
+
+
 	!FUNZIONE OBIETTIVO------------------------------------------------------------
 
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
@@ -293,9 +295,22 @@ model "Location Routing"
   	! --------- Vincoli dinamici di appartenenza alla route, sul rilassamento continuo -------------------
   	writeln("----------- Rilassamento continuo -----------")
 
+	
   	iterazioni := 0
   	termina := false
   	while(not termina) do
+  		minimize(XPRS_LIN,Objective)
+  		termina := true
+  		forall(h in CUSTOMERS_NUMBER, i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in LOCATIONS_START_NUMBER | j<>k) do
+			if(getsol(edge_exists(h,i)) + getsol(edge_exists(i,h)) + getsol(customer_depot(i,j)) + getsol(customer_depot(h,k)) > 2) then
+				edge_exists(h,i) + edge_exists(i,h) + customer_depot(i,j) + customer_depot(h,k) <= 2
+				termina := false
+			end-if
+		end-do
+		iterazioni := iterazioni + 1 
+	end-do
+	writeln("Iterazioni ", iterazioni)
+  	(!
   		writeln("\nIterazione, ", iterazioni)
   		termina := true
   		minimize(XPRS_LIN,Objective)
@@ -304,7 +319,7 @@ model "Location Routing"
   			write(i, " -> { ")
   			forall (j in LOCATIONS_START_NUMBER) do
   				if (getsol(customer_depot(i,j))>0) then
-  					write(j, " ")
+  					write(j, ":", getsol(customer_depot(i,j)), " ")
   				end-if
   			end-do
   			writeln("}")
@@ -328,7 +343,7 @@ model "Location Routing"
   			end-if
   		end-do
 		iterazioni := iterazioni + 1
-  	end-do
+  	end-do!)
   	writeln("---------------------------------------------")
 	! ---------------------------------------------------------------------------------------------------
 
