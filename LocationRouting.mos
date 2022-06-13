@@ -272,10 +272,14 @@ model "Location Routing"
 
 	!)
 
+	(! --- vincoli LUANA per collegare i clienti a clienti delle stesse route. funzionante. provo ad implementarlo dinamico
+
 	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in CUSTOMERS_NUMBER) do
 		customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
 		customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
 	end-do
+
+	!)
 
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
@@ -285,6 +289,48 @@ model "Location Routing"
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
 
   	plot
+
+  	! --------- Vincoli dinamici di appartenenza alla route, sul rilassamento continuo -------------------
+  	writeln("----------- Rilassamento continuo -----------")
+
+  	iterazioni := 0
+  	termina := false
+  	while(not termina) do
+  		writeln("\nIterazione, ", iterazioni)
+  		termina := true
+  		minimize(XPRS_LIN,Objective)
+  		writeln("Cliente -> { magazzini } ")
+  		forall (i in CUSTOMERS_NUMBER) do
+  			write(i, " -> { ")
+  			forall (j in LOCATIONS_START_NUMBER) do
+  				if (getsol(customer_depot(i,j))>0) then
+  					write(j, " ")
+  				end-if
+  			end-do
+  			writeln("}")
+  		end-do
+
+  		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER| i<>j) do ! controllo quanti magazzini ci sono in comune tra due clienti
+  			comune := 0
+  			forall(k in LOCATIONS_START_NUMBER) do
+  				if(getsol(customer_depot(i,k)) > 0 and getsol(customer_depot(j,k)) > 0) then
+  					comune := comune + 1
+  				end-if
+  			end-do
+  			if(comune > 0) then
+  				writeln(i, " e ", j, " hanno ", comune, " magazzini in comune")
+  			else
+  				writeln(i, " e ", j, " NON hanno magazzini in comune") ! se non ci sono magazzini in comune tra clienti
+  				if(getsol(edge_exists(i,j)) > 0) then ! se esiste un arco tra i due clienti
+  					edge_exists(i,j) = 0 ! Genero vincolo che vieti l'arco tra i due clienti
+  					termina := false
+  				end-if
+  			end-if
+  		end-do
+		iterazioni := iterazioni + 1
+  	end-do
+  	writeln("---------------------------------------------")
+	! ---------------------------------------------------------------------------------------------------
 
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
