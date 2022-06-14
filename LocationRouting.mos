@@ -294,22 +294,29 @@ model "Location Routing"
 
   	! --------- Vincoli dinamici di appartenenza alla route, sul rilassamento continuo -------------------
   	writeln("----------- Rilassamento continuo -----------")
-
-	
-  	iterazioni := 0
+	! ----------------
+	contatoreWhile := 1
+	iterazioni := 0
   	termina := false
   	while(not termina) do
-  		minimize(XPRS_LIN,Objective)
+  		minimize(XPRS_LIN, Objective)
   		termina := true
   		forall(h in CUSTOMERS_NUMBER, i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in LOCATIONS_START_NUMBER | j<>k) do
 			if(getsol(edge_exists(h,i)) + getsol(edge_exists(i,h)) + getsol(customer_depot(i,j)) + getsol(customer_depot(h,k)) > 2) then
-				edge_exists(h,i) + edge_exists(i,h) + customer_depot(i,j) + customer_depot(h,k) <= 2
+				a(contatoreWhile) := edge_exists(h,i) + edge_exists(i,h) + customer_depot(i,j) + customer_depot(h,k) <= 2
 				termina := false
+				contatoreWhile := contatoreWhile+1
 			end-if
 		end-do
-		iterazioni := iterazioni + 1 
+		writeln(contatoreWhile - 1, " vincoli aggiunti")
+		iterazioni := iterazioni + 1
 	end-do
 	writeln("Iterazioni ", iterazioni)
+
+	! stampa_matrici(true,true,true)
+	! ----------------
+
+
   	(!
   		writeln("\nIterazione, ", iterazioni)
   		termina := true
@@ -387,6 +394,8 @@ model "Location Routing"
  	     !   end-do
 	  !  end-do
 
+		minimize(Objective)
+
 
 
 		! Vincolo di CutSet
@@ -409,12 +418,13 @@ model "Location Routing"
 			end-if
 		end-do
 
+
+		debug_magazzini_clienti
+		debug_archi
 		plot
 	end-do
 
-	! stampa_matrici(true,true,true)
-	debug_magazzini_clienti
-	debug_archi
+
 
 	plot
 
