@@ -242,8 +242,8 @@ model "Location Routing"
 	! la somma delle domande di tutti i clienti deve essere minore uguale della capacità dei magazzini moltiplicata per il numero di possibili magazzini
 	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= sum(j in LOCATIONS_START_NUMBER) depots_capacity*build_depot(j)
 
-	
-		
+
+
 	(!forall (k in LOCATIONS_START_NUMBER ) do ! per ogni magazzino di START k
  	        forall (i in CUSTOMERS_NUMBER | getsol(customer_depot(i,k)) = 1) do ! per ogni cliente i di magazzino k
  	    		if (getsol(edge_exists(i,k + locations_number)) = 0) then ! se dal cliente i non esce un arco verso il magazzino di end...
@@ -274,6 +274,12 @@ model "Location Routing"
 		customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
 		customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
 	end-do
+	
+	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
+		if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
+			customer_depot(i,k) + customer_depot(j,k) <= 1
+		end-if
+	end-do
 
     writeln(sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3))
 	writeln(depots_capacity*locations_number)
@@ -282,12 +288,12 @@ model "Location Routing"
 
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCE(i,j) * edge_exists(i,j))
 
-  	plot
+  	! plot
 
 	minimize(Objective)
 	writeln("\nObjective = ", getobjval, "\n")
 
-	plot
+	! plot
 
 	! Azzera visto azzera le visite su tutti i punti
 	azzera_visto
@@ -332,7 +338,7 @@ model "Location Routing"
 		writeln(iter, "\nObjective = ", getobjval)
 
 		! stampa_matrici(false,true,true)
-		debug_magazzini_clienti
+		! debug_magazzini_clienti
 		! debug_archi
 
 		azzera_visto
@@ -344,7 +350,7 @@ model "Location Routing"
 			end-if
 		end-do
 
-		plot
+		! plot
 	end-do
 
 	! stampa_matrici(true,true,true)
