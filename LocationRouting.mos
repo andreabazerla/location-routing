@@ -323,6 +323,19 @@ model "Location Routing"
 		end-if
 	end-do
 
+	! TO-DO
+	(!
+	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
+		x(i,j,k) <= customer_depot(i,k)
+		x(i,j,k) <= customer_depot(j,k)
+		x(i,j,k) <= build_depot(k)
+	end-do
+
+	! TO-DO
+	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER)
+		edge_exists(i,j) = sum(k in LOCATIONS_START_NUMBER) x(i,j,k)
+	!)
+
 	! ----------------------------------------------------------------------------
 
 	! Funzione obiettivo
