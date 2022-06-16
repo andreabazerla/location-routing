@@ -4,3 +4,4 @@ out/
 *.bdg
 *.svg
 *debug.txt
+*.prof
