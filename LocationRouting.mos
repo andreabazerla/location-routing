@@ -62,6 +62,7 @@ model "Location Routing"
     debug_file_name := "" + svgtimestamp + "_debug.txt"
 
 	! VARIABILI MODIFICABILI -----------------------------------------------------
+	
 	! Numero di locazioni e clienti
     locations_number := 6
   	customers_number := 12
@@ -73,7 +74,7 @@ model "Location Routing"
   	customer_max_demand := 10
 
   	! Costo massimo della costruzione dei magazzini
-  	depot_max_cost := 10 ! numero alto predilige cicli lunghi, numero basso predilige apertura di più magazzini vicini ai clienti
+  	depot_max_cost := 100 ! numero alto predilige cicli lunghi, numero basso predilige apertura di più magazzini vicini ai clienti
 
   	! Limite massimo del piano cartesiano dove posizionare magazzini e clienti
   	point_max_range := 100
@@ -583,13 +584,10 @@ model "Location Routing"
 		svgaddgroup("edges_depots", "Edges Depots", SVG_WHITE)
 		forall (i in POINTS_NUMBER, j in POINTS_NUMBER) do
 			if (getsol(edge_exists(i,j))=1) then
-				! Gli archi verdi sono quelli tra magazzino E e mag S, quelli tra mag S e S, quelli tra E e E e quelli tra E e S
-				! if (not(j<=locations_number and i>locations_number and i<=(locations_number*2))) then
 				if (j<=(locations_number*2) and i<=(locations_number*2)) then
-					!svgaddarrow("edges_depots", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
 					svgsetstyle("edges_depots", SVG_STROKEWIDTH, "0.02rem")
 				else
-					svgaddarrow("edges_customers", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2)); !da magazzino a cliente e da cliente a magazzino
+					svgaddarrow("edges_customers", POINTS(i,1), POINTS(i,2), POINTS(j,1), POINTS(j,2));
 					svgsetstyle("edges_customers", SVG_STROKEWIDTH, "0.02rem")
 				end-if
 			end-if
