@@ -62,10 +62,10 @@ model "Location Routing"
     debug_file_name := "" + svgtimestamp + "_debug.txt"
 
 	! VARIABILI MODIFICABILI -----------------------------------------------------
-	
+
 	! Numero di locazioni e clienti
     locations_number := 6
-  	customers_number := 12
+  	customers_number := 5
 
   	! Capacità dei magazzini costruiti
   	depots_capacity := 20
@@ -78,6 +78,16 @@ model "Location Routing"
 
   	! Limite massimo del piano cartesiano dove posizionare magazzini e clienti
   	point_max_range := 100
+
+  	! Abilita/Disabilita vincolo Cliente-Route V1
+  	clienteroutev1 := true
+
+	! Abilita/Disabilita vincolo Cliente-Route V2 - Attenzione a dimensione problema
+  	clienteroutev2 := false
+
+  	! Abilita/Disabilita vincolo di capacità statico sulla coppia di clienti
+  	staticocap := true
+
 	! ----------------------------------------------------------------------------
 
 	! Definizione di tutti i punti sul grafo
@@ -311,31 +321,40 @@ model "Location Routing"
 	! la somma delle domande di tutti i clienti deve essere minore-uguale della capacità dei magazzini moltiplicata per il numero di possibili magazzini
 	sum(i in CUSTOMERS_NUMBER) CUSTOMERS(i,3) <= sum(j in LOCATIONS_START_NUMBER) depots_capacity*build_depot(j)
 
-	! TO-DO
-	forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in CUSTOMERS_NUMBER) do
-		customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
-		customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
-	end-do
+	! -- Vincoli parametrizzati --
 
-	! TO-DO
-	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
-		if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
-			customer_depot(i,k) + customer_depot(j,k) <= 1
-		end-if
-	end-do
+	! Vincolo appartenenza Cliente-Route V1
+	if(clienteroutev1) then
+		writeln("Vincolo Cliente-Route V1 Abilitato")
+		forall(i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER, k in CUSTOMERS_NUMBER) do
+			customer_depot(i,j) >= customer_depot(k,j) + edge_exists(i,k)-1
+			customer_depot(k,j) >= customer_depot(i,j) + edge_exists(i,k)-1
+		end-do
+	end-if
 
-	! TO-DO
-	(!
-	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
-		x(i,j,k) <= customer_depot(i,k)
-		x(i,j,k) <= customer_depot(j,k)
-		x(i,j,k) <= build_depot(k)
-	end-do
+	! Vincolo di capacità statico sulla coppia di clienti
+	if(staticocap) then
+		writeln("Vincolo di capacità statico sulla coppia di clienti Abilitato")
+		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
+			if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
+				customer_depot(i,k) + customer_depot(j,k) <= 1
+			end-if
+		end-do
+	end-if
 
-	! TO-DO
-	forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER)
-		edge_exists(i,j) = sum(k in LOCATIONS_START_NUMBER) x(i,j,k)
-	!)
+	! Vincolo appartenenza Cliente-Route V2
+
+	if(clienteroutev2) then
+		writeln("Vincolo Cliente-Route V2 Abilitato")
+		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
+			x(i,j,k) <= customer_depot(i,k)
+			x(i,j,k) <= customer_depot(j,k)
+			x(i,j,k) <= build_depot(k)
+		end-do
+
+		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER)
+			edge_exists(i,j) = sum(k in LOCATIONS_START_NUMBER) x(i,j,k)
+	end-if
 
 	! ----------------------------------------------------------------------------
 
