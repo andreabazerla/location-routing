@@ -13,7 +13,7 @@
 model "Location Routing"
 
 	! Direttive per il compilatore
-	uses "mmxprs", "mmsvg"
+	uses "mmxprs", "mmsvg", "advmod"
 
 	! Versione del modello
 	version 2.2.0
@@ -64,14 +64,14 @@ model "Location Routing"
 	! VARIABILI MODIFICABILI -----------------------------------------------------
 
 	! Numero di locazioni e clienti
-    locations_number := 6
-  	customers_number := 5
+    locations_number := 10
+  	customers_number := 8
 
   	! Capacità dei magazzini costruiti
-  	depots_capacity := 20
+  	depots_capacity := 10
 
   	! Domanda massima dei clienti
-  	customer_max_demand := 10
+  	customer_max_demand := 8
 
   	! Costo massimo della costruzione dei magazzini
   	depot_max_cost := 100 ! numero alto predilige cicli lunghi, numero basso predilige apertura di più magazzini vicini ai clienti
@@ -86,7 +86,10 @@ model "Location Routing"
   	clienteroutev2 := false
 
   	! Abilita/Disabilita vincolo di capacità statico sulla coppia di clienti
-  	staticocap := true
+  	staticocap := false
+
+  	! Abilita/Disabilita tagli di tipo cover
+  	covercut := true
 
 	! ----------------------------------------------------------------------------
 
@@ -343,7 +346,6 @@ model "Location Routing"
 	end-if
 
 	! Vincolo appartenenza Cliente-Route V2
-
 	if(clienteroutev2) then
 		writeln("Vincolo Cliente-Route V2 Abilitato")
 		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
@@ -360,6 +362,24 @@ model "Location Routing"
 
 	! Funzione obiettivo
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCES(i,j) * edge_exists(i,j))
+
+  	if(covercut) then
+  		writeln("Tagli di tipo cover Abilitati")
+  		prosegui_cover := true
+  		while(prosegui_cover) do
+  			prosegui_cover := false
+  			minimize(XPRS_LIN, Objective) ! Rilassamento continuo
+  			forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) do
+  				if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
+  					if(getsol(customer_depot(i,k)) + getsol(customer_depot(j,k)) > 1) then
+  						customer_depot(i,k) + customer_depot(j,k) <= 1
+  						prosegui_cover := true
+  						writeln("cover: generato vincolo")
+  					end-if
+  				end-if
+  			end-do
+  		end-do
+  	end-if
 
   	! plot
 
