@@ -1,0 +1,70 @@
+==> NODEPROBINGEFFORT    = 2
+==> OUTPUTLOG            = 1
+==> MUTEXCALLBACKS       = 0
+FICO Xpress v8.13.3, Hyper, solve started 22:59:39, Jun 20, 2022
+Heap usage: 569KB (peak 569KB, 1625KB system)
+Minimizing MILP xprs_265534c3270 using up to 12 threads, with these control settings:
+OUTPUTLOG = 1
+MUTEXCALLBACKS = 0
+NODEPROBINGEFFORT = 2
+Original problem has:
+      2588 rows         1098 cols         8586 elements      1098 globals
+Presolved problem has:
+       780 rows          630 cols         3188 elements       630 globals
+LP relaxation tightened
+Presolve finished in 0 seconds
+Heap usage: 1071KB (peak 2267KB, 1627KB system)
+
+Coefficient range                    original                 solved        
+  Coefficients   [min,max] : [ 1.00e+00,  1.00e+01] / [ 1.25e-01,  1.25e+00]
+  RHS and bounds [min,max] : [ 1.00e+00,  5.10e+01] / [ 1.00e+00,  7.50e+00]
+  Objective      [min,max] : [ 2.00e+00,  1.02e+02] / [ 2.00e+00,  9.76e+01]
+Autoscaling applied standard scaling
+
+Will try to keep branch and bound tree memory usage below 9.5GB
+ *** Solution found:  1027.124874   Time:   0    Heuristic: e ***
+ *** Solution found:   636.230249   Time:   0    Heuristic: k ***
+Starting concurrent solve with dual (1 thread)
+
+ Concurrent-Solve,   0s
+            Dual        
+    objective   dual inf
+ D  517.55467   .0000000
+------- optimal --------
+Concurrent statistics:
+      Dual: 232 simplex iterations, 0.00s
+Optimal solution found
+ 
+   Its         Obj Value      S   Ninf  Nneg   Sum Dual Inf  Time
+   232        517.554665      D      0     0        .000000     0
+Dual solved problem
+  232 simplex iterations in 0.00 seconds at time 0
+
+Final objective                       : 5.175546651633665e+02
+  Max primal violation      (abs/rel) :       0.0 /       0.0
+  Max dual violation        (abs/rel) :       0.0 /       0.0
+  Max complementarity viol. (abs/rel) :       0.0 /       0.0
+
+Starting root cutting & heuristics
+ 
+ Its Type    BestSoln    BestBound   Sols    Add    Del     Gap     GInf   Time
+a          524.581409   517.554665      3                  1.34%       0      0
+
+Performing root presolve...
+
+Reduced problem has:      48 rows     166 columns       368 elements
+Presolve dropped   :     732 rows     464 columns      2820 elements
+Presolve tightened :       147 elements
+Symmetric problem: generators: 7, support set: 166
+ Number of orbits: 8, largest orbit: 42
+ Row orbits: 8, row support: 48
+Will try to keep branch and bound tree memory usage below 9.5GB
+STOPPING - MIPRELSTOP target reached (MIPRELSTOP=0.0001  gap=9.86605e-07).
+ *** Search completed ***
+Uncrunching matrix
+Final MIP objective                   : 5.245814092890027e+02
+Final MIP bound                       : 5.245808917343376e+02
+  Solution time / primaldual integral :         0s/ 82.382610%
+  Number of solutions found / nodes   :         3 /         0
+  Max primal violation      (abs/rel) :       0.0 /       0.0
+  Max integer violation     (abs    ) :       0.0

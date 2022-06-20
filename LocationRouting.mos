@@ -17,7 +17,8 @@ model "Location Routing"
 
 	! Versione del modello
 	version 2.2.0
-
+	
+	
 	! Parametro di stampa messaggi dell'ottimizzatore
 	setparam("XPRS_VERBOSE", false)
 
@@ -55,7 +56,7 @@ model "Location Routing"
     ! Variabili per la stampa delle immagini svg
     svgcounter := 0
     svgtimestamp := timestamp
-    saved := false ! Imposta a true per salvare le svg
+    saved := true ! Imposta a true per salvare le svg
 
     ! Variabili per il debug su file
     debug_su_file := false
@@ -64,11 +65,11 @@ model "Location Routing"
 	! VARIABILI MODIFICABILI -----------------------------------------------------
 
 	! Numero di locazioni e clienti
-    locations_number := 6
-  	customers_number := 12
+    locations_number := 10
+  	customers_number := 8
 
   	! Capacità dei magazzini costruiti
-  	depots_capacity := 10
+  	depots_capacity := 15
 
   	! Domanda massima dei clienti
   	customer_max_demand := 8
@@ -79,14 +80,16 @@ model "Location Routing"
   	! Limite massimo del piano cartesiano dove posizionare magazzini e clienti
   	point_max_range := 100
 
+  	! seed
+    myseed := integer(round((100*random)+0.5)) ! questo genera seed randomici per fare diverse prove sugli stessi dati.
+    myseed := 73	! salvo il seed 59 perché è particolarmente buono
+    setrandseed(myseed)
+
   	! Abilita/Disabilita vincolo Cliente-Route V1
   	clienteroutev1 := true
 
 	! Abilita/Disabilita vincolo Cliente-Route V2 - Attenzione a dimensione problema
   	clienteroutev2 := false
-
-  	! Abilita/Disabilita vincolo di capacità statico sulla coppia di clienti
-  	staticocap := false ! -> questo vincolo è scorretto (anche con i>j). provare ad abilitare con seed 28 o 59. Lunedì lo rimuoviamo
 
   	! Abilita/Disabilita tagli di tipo cover V1
   	covercutv1 := true
@@ -159,11 +162,6 @@ model "Location Routing"
 	forall (i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER) x(i,j,k) is_binary
 
     ! INIZIALIZZAZIONE DEGLI ARRAY --------------------------------------------
-
-    ! seed
-    myseed := integer(round((100*random)+0.5)) ! questo genera seed randomici per fare diverse prove sugli stessi dati.
-    myseed := 59	! salvo il seed 59 perché è particolarmente buono
-    setrandseed(myseed)
 
 
 	contatore := 1
@@ -344,15 +342,6 @@ model "Location Routing"
 		end-do
 	end-if
 
-	! Vincolo di capacità statico sulla coppia di clienti
-	if(staticocap) then
-		writeln("Vincolo di capacità statico sulla coppia di clienti Abilitato")
-		forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER | i<>j) do
-			if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
-				customer_depot(i,k) + customer_depot(j,k) <= 1
-			end-if
-		end-do
-	end-if
 
 	! Vincolo appartenenza Cliente-Route V2
 	if(clienteroutev2) then
@@ -372,6 +361,7 @@ model "Location Routing"
 	! Funzione obiettivo
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCES(i,j) * edge_exists(i,j))
 
+	nvincoli := 0
   	if(covercutv1) then
   		writeln("Tagli di tipo cover v1 Abilitati")
   		prosegui_cover := true
@@ -382,6 +372,7 @@ model "Location Routing"
   				if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
   					if( (getsol(customer_depot(i,k))) + (getsol(customer_depot(j,k))) > 1 ) then
   						customer_depot(i,k) + customer_depot(j,k) <= 1
+  						nvincoli += 1
   						prosegui_cover := true
   						writeln("cover: generato vincolo. C", i, " domanda ",CUSTOMERS(i,3) , " C", j, " domanda ",CUSTOMERS(j,3))
   					end-if
@@ -389,6 +380,7 @@ model "Location Routing"
   			end-do
   		end-do
   	end-if
+  	writeln("Nuovi vincoli generati: ", nvincoli)
 
   	! plot
 
@@ -432,8 +424,9 @@ model "Location Routing"
 			end-if
 		end-do
 
-		! plot
+		!plot
 	end-do
+	writeln("Iterazioni cutSet: ", iter)
 
 	stampa_matrici(true,true,true)
 	debug_magazzini_clienti
@@ -666,11 +659,12 @@ model "Location Routing"
 	  		svgcounter := svgcounter + 1
 	  		svgsave(filename)
 	  		svgrefresh
-	  		wait(1)
+	  		!wait(1)
 	  		!svgwaitclose
+	  		!svgpause
 	  	else
 	  		svgrefresh
-	  		wait(1)
+	  		!wait(1)
 	  		!svgpause
 	  	end-if
 

@@ -1,0 +1,87 @@
+==> PRESOLVE             = 0
+==> OUTPUTLOG            = 1
+==> SBESTIMATE           = 5
+==> MUTEXCALLBACKS       = 0
+==> HEUREMPHASIS         = 0
+FICO Xpress v8.13.3, Hyper, solve started 22:59:45, Jun 20, 2022
+Heap usage: 574KB (peak 574KB, 1602KB system)
+Minimizing MILP xprs_265534c3270 using up to 12 threads, with these control settings:
+PRESOLVE = 0
+OUTPUTLOG = 1
+SBESTIMATE = 5
+MUTEXCALLBACKS = 0
+HEUREMPHASIS = 0
+Original problem has:
+      2589 rows         1098 cols         8986 elements      1098 globals
+
+Coefficient range                    original                 solved        
+  Coefficients   [min,max] : [ 1.00e+00,  1.00e+01] / [ 1.25e-01,  1.25e+00]
+  RHS and bounds [min,max] : [ 1.00e+00,  5.10e+01] / [ 1.00e+00,  6.38e+00]
+  Objective      [min,max] : [ 2.00e+00,  1.02e+02] / [ 2.00e+00,  1.02e+02]
+Autoscaling applied standard scaling
+
+Will try to keep branch and bound tree memory usage below 9.5GB
+Starting concurrent solve with dual (1 thread), primal (1 thread) and barrier (10 threads)
+
+                           Concurrent-Solve,   0s
+            Dual                      Primal                     Barrier      
+    objective   sum inf                                                       
+ P  367.20596   .0000000 |                          |                         
+------- optimal -------- | ----- interrupted ------ | ----- interrupted ------
+Concurrent statistics:
+      Dual: 477 simplex iterations, 0.02s
+    Primal: 548 simplex iterations, 0.02s
+   Barrier: 2 barrier and 0 simplex iterations, 0.02s
+            Barrier used 10 threads 6 cores, L1\L2 cache: 32K\9216K
+            Barrier used AVX support
+Optimal solution found
+ 
+   Its         Obj Value      S   Ninf  Nneg        Sum Inf  Time
+   477        367.205958      P      0     0        .000000     0
+Dual solved problem
+  477 simplex iterations in 0.03 seconds at time 0
+
+Final objective                       : 3.672059579214315e+02
+  Max primal violation      (abs/rel) :       0.0 /       0.0
+  Max dual violation        (abs/rel) : 1.776e-15 / 1.776e-15
+  Max complementarity viol. (abs/rel) :       0.0 /       0.0
+
+Starting root cutting & heuristics
+ 
+ Its Type    BestSoln    BestBound   Sols    Add    Del     Gap     GInf   Time
+   1  K                 432.836448      0    198      0               66      0
+   2  K                 450.459002      0    164    187               68      0
+   3  K                 457.429750      0    231    111               85      0
+   4  K                 462.192726      0    112    157              115      0
+   5  K                 493.129062      0    270     89              139      0
+   6  K                 508.989739      0    232    106              115      0
+   7  K                 517.554665      0    218    165               66      1
+   8  K                 518.628934      0      5     17               26      1
+   9  K                 520.029299      0     21     34               14      1
+  10  K                 521.542800      0    111    158               90      1
+  11  K                 522.717689      0     27     24               78      1
+  12  K                 523.403684      0     14     43               67      1
+  13  K                 523.585766      0    128     50              110      1
+  14  K                 523.585766      0      1      5               42      1
+  15  K                 523.585766      0      0      1               42      1
+ 
+Cuts in the matrix         : 585
+Cut elements in the matrix : 4718
+
+Starting tree search.
+Deterministic mode with up to 12 running threads and up to 32 tasks.
+Heap usage: 7080KB (peak 14MB, 2536KB system)
+ 
+    Node     BestSoln    BestBound   Sols Active  Depth     Gap     GInf   Time
+       1                524.510439      0      2      1               36      1
+*      1   524.581409   524.510439      1      2      2    0.01%       0      1
+       2   524.581409   524.510439      1      2      2    0.01%       1      1
+STOPPING - MIPRELSTOP target reached (MIPRELSTOP=0.0001  gap=6.99998e-07).
+STOPPING - MIPRELSTOP target reached (MIPRELSTOP=0.0001  gap=6.99998e-07).
+ *** Search completed ***
+Final MIP objective                   : 5.245814092890257e+02
+Final MIP bound                       : 5.245810420830678e+02
+  Solution time / primaldual integral :         1s/ 97.816595%
+  Number of solutions found / nodes   :         1 /         2
+  Max primal violation      (abs/rel) : 4.984e-13 / 4.984e-13
+  Max integer violation     (abs    ) : 4.984e-13
