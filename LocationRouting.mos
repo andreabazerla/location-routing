@@ -17,8 +17,8 @@ model "Location Routing"
 
 	! Versione del modello
 	version 2.2.0
-	
-	
+
+
 	! Parametro di stampa messaggi dell'ottimizzatore
 	setparam("XPRS_VERBOSE", false)
 
@@ -65,14 +65,14 @@ model "Location Routing"
 	! VARIABILI MODIFICABILI -----------------------------------------------------
 
 	! Numero di locazioni e clienti
-    locations_number := 10
-  	customers_number := 8
+    locations_number := 8
+  	customers_number := 12
 
   	! Capacità dei magazzini costruiti
   	depots_capacity := 15
 
   	! Domanda massima dei clienti
-  	customer_max_demand := 8
+  	customer_max_demand := 10
 
   	! Costo massimo della costruzione dei magazzini
   	depot_max_cost := 100 ! numero alto predilige cicli lunghi, numero basso predilige apertura di più magazzini vicini ai clienti
@@ -82,7 +82,7 @@ model "Location Routing"
 
   	! seed
     myseed := integer(round((100*random)+0.5)) ! questo genera seed randomici per fare diverse prove sugli stessi dati.
-    myseed := 73	! salvo il seed 59 perché è particolarmente buono
+    myseed := 59	! salvo il seed 59 perché è particolarmente buono
     setrandseed(myseed)
 
   	! Abilita/Disabilita vincolo Cliente-Route V1
@@ -92,7 +92,7 @@ model "Location Routing"
   	clienteroutev2 := false
 
   	! Abilita/Disabilita tagli di tipo cover V1
-  	covercutv1 := true
+  	covercutv1 := false
 
 	! ----------------------------------------------------------------------------
 
@@ -278,13 +278,13 @@ model "Location Routing"
 	forall (i in CUSTOMERS_NUMBER, j in LOCATIONS_START_NUMBER)
 		 build_depot(j) >= customer_depot(i,j)
 
-	! Non esistono archi con coda e testa sullo stesso nodo del grafo
-	sum(i in POINTS_NUMBER, j in POINTS_NUMBER | i=j) edge_exists(i,j) = 0
+	! Non esistono archi sullo stesso nodo del grafo
+	forall( i in POINTS_NUMBER) edge_exists(i,i) = 0
 
 	! Per ogni nodo si ha solo un arco entrante ed uno uscente
 	forall (i in POINTS_NUMBER) do
-		sum(j in POINTS_NUMBER) edge_exists(i,j) = 1
-		sum(j in POINTS_NUMBER) edge_exists(j,i) = 1
+		sum(j in POINTS_NUMBER | i<>j) edge_exists(i,j) = 1
+		sum(j in POINTS_NUMBER | i<>j) edge_exists(j,i) = 1
 	end-do
 
 	! Da un magazzino end deve partire un arco verso un magazzino start diverso da se stesso
