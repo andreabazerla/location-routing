@@ -72,7 +72,7 @@ model "Location Routing"
   	depots_capacity := 15
 
   	! Domanda massima dei clienti
-  	customer_max_demand := 10
+  	customer_max_demand := 15
 
   	! Costo massimo della costruzione dei magazzini
   	depot_max_cost := 100 ! numero alto predilige cicli lunghi, numero basso predilige apertura di più magazzini vicini ai clienti
@@ -82,8 +82,7 @@ model "Location Routing"
 
   	! seed
     myseed := integer(round((100*random)+0.5)) ! questo genera seed randomici per fare diverse prove sugli stessi dati.
-    myseed := 59	! salvo il seed 59 perché è particolarmente buono
-    setrandseed(myseed)
+    myseed := 55	! salvo il seed 59 perché è particolarmente buono
 
   	! Abilita/Disabilita vincolo Cliente-Route V1
   	clienteroutev1 := true
@@ -91,8 +90,8 @@ model "Location Routing"
 	! Abilita/Disabilita vincolo Cliente-Route V2 - Attenzione a dimensione problema
   	clienteroutev2 := false
 
-  	! Abilita/Disabilita tagli di tipo cover V1
-  	covercutv1 := false
+  	! Abilita/Disabilita raffinamento per coppie di clienti
+  	raffinamento_coppie := true
 
 	! ----------------------------------------------------------------------------
 
@@ -136,7 +135,7 @@ model "Location Routing"
 		! Array delle distanze tra un punto e l'altro
 		DISTANCES: array(POINTS_NUMBER, POINTS_NUMBER) of real
 
-		! Array TO-DO
+		! Array di nodi visitati
 		nodi_visitati: array(POINTS_NUMBER) of integer
 
 		! Array variabili decisionali sulla costruzione dei magazzini
@@ -148,7 +147,7 @@ model "Location Routing"
 		! Array variabili decisionali per l'associazione cliente-magazzino
 		customer_depot: array(CUSTOMERS_NUMBER, LOCATIONS_START_END_NUMBER) of mpvar
 
-		! TO-DO
+		! Array di variabili ausiliarie per vincolo Clienti-Route v2
 		x: array(CUSTOMERS_NUMBER, CUSTOMERS_NUMBER, LOCATIONS_START_NUMBER) of mpvar
 
 		! Funzione obbiettivo
@@ -163,6 +162,7 @@ model "Location Routing"
 
     ! INIZIALIZZAZIONE DEGLI ARRAY --------------------------------------------
 
+	setrandseed(myseed)
 
 	contatore := 1
   	forall (i in LOCATIONS_START_NUMBER) do
@@ -362,25 +362,26 @@ model "Location Routing"
   	Objective := sum(i in LOCATIONS_START_NUMBER) (LOCATIONS(i,3) * build_depot(i)) + sum(i in POINTS_NUMBER, j in POINTS_NUMBER) (DISTANCES(i,j) * edge_exists(i,j))
 
 	nvincoli := 0
-  	if(covercutv1) then
-  		writeln("Tagli di tipo cover v1 Abilitati")
+  	if(raffinamento_coppie) then
+  		writeln("Raffinamento per coppie di clienti abilitato")
   		prosegui_cover := true
   		while(prosegui_cover) do
   			prosegui_cover := false
   			minimize(XPRS_LIN, Objective) ! Rilassamento continuo
-  			forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER | i<>j) do
+  			forall(i in CUSTOMERS_NUMBER, j in CUSTOMERS_NUMBER, k in LOCATIONS_START_NUMBER | i>j) do
   				if(CUSTOMERS(i,3) + CUSTOMERS(j,3) > depots_capacity) then
   					if( (getsol(customer_depot(i,k))) + (getsol(customer_depot(j,k))) > 1 ) then
   						customer_depot(i,k) + customer_depot(j,k) <= 1
   						nvincoli += 1
   						prosegui_cover := true
-  						writeln("cover: generato vincolo. C", i, " domanda ",CUSTOMERS(i,3) , " C", j, " domanda ",CUSTOMERS(j,3))
+  						writeln("raffinamento: generato vincolo. C", i, " domanda ",CUSTOMERS(i,3) , " C", j, " domanda ",CUSTOMERS(j,3), " magazzino ", k)
   					end-if
   				end-if
   			end-do
   		end-do
+  		writeln("raffinamento: nuovi vincoli generati: ", nvincoli)
   	end-if
-  	writeln("Nuovi vincoli generati: ", nvincoli)
+
 
   	! plot
 
@@ -403,7 +404,7 @@ model "Location Routing"
 	iter := 0
 	while(Connessi < points_number) do
 
-		! Vincolo di CutSet: TO-DO
+		! Vincolo di CutSet
         sum(i in POINTS_NUMBER, j in POINTS_NUMBER | (nodi_visitati(i) + nodi_visitati(j) = 1)) edge_exists(i,j) >= 2
 
 		iter := iter + 1
